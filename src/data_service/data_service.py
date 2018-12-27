@@ -36,3 +36,5 @@ class DataService:
         else:
             print("Cloning " + path_to_clone_from + " to " + path_to_clone_to)
             Repo.clone_from(path_to_clone_from, path_to_clone_to)
+
+        return path_to_clone_to

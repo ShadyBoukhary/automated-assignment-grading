@@ -42,3 +42,8 @@ class Utilities:
     @staticmethod
     def path_exists(path):
         return os.path.exists(path)
+
+    @staticmethod
+    def get_full_dir_path():
+        full_executable_path = os.path.realpath(__file__)
+        return os.path.dirname(full_executable_path)
