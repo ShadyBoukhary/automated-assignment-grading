@@ -9,7 +9,7 @@ class Utilities:
     def correct_input(file_contents):
         """Corrects input by removing leading and trailing whitspaces - as well as empty lines"""
 
-        return os.linesep.join([s for s in file_contents.splitlines() if s]).strip()
+        return os.linesep.join([s.strip() for s in file_contents.splitlines() if s]).strip()
 
     @staticmethod
     def read_file(filename):
