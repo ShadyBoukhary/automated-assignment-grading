@@ -1,6 +1,10 @@
-import pandas as pd
 import random
 from collections import Counter
+from statistics import median, stdev
+
+import pandas as pd
+
+
 def generate_report(assignment):
     """Generates Report
 
@@ -15,23 +19,23 @@ def generate_report(assignment):
     print("Generating report...")
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
-    grades.append(16)
-    grades.append(46)
+    # grades.append(16)
+    # grades.append(46)
 
-    grades.append(36)
+    # grades.append(36)
 
-    grades.append(76)
+    # grades.append(76)
 
-    grades.append(26)
+    # grades.append(26)
 
-    grades.append(19)
-    grades.append(19)
+    # grades.append(19)
+    # grades.append(19)
 
-    grades.append(19)
+    # grades.append(19)
 
-    grades.append(19)
+    # grades.append(60)
 
-    grades.append(19)
+    # grades.append(100)
     grades_counter = Counter(grades)
 
     # Prepare data
@@ -47,7 +51,6 @@ def generate_report(assignment):
     data_frame = pd.DataFrame(multi_iter1, index=index_2)
     data_frame = data_frame.reindex(columns=sorted(data_frame.columns))
     
-
     # Createe Pandas Excel writer with XlsxWriter engine
     excel_file = assignment.course_name + "_" + assignment.repo_name + "_assignment_report.xlsx"
     sheet_name = "Report"
@@ -64,9 +67,9 @@ def generate_report(assignment):
 
     # Configure chart series from dataframe
     chart.add_series({
-    'categories': [sheet_name, 1, 0, 100, 0], #row #col #row #col
-    'values':     [sheet_name, 1, 1, 100, 1],
-    "gap":        10
+    'categories': [sheet_name, 1, 0, 101, 0], #row #col #row #col
+    'values':     [sheet_name, 1, 1, 101, 1],
+    "gap":        50
     })
 
     # Configure the chart axes.
@@ -77,9 +80,40 @@ def generate_report(assignment):
     chart.set_legend({'position': 'none'})
 
     # Insert the chart into the worksheet.
-    worksheet.insert_chart('D2', chart)
+    worksheet.insert_chart('D10: J25', chart)
+
+
+    # Generate table
+
+    # Set the column widths.
+    worksheet.set_column("D:F", 18)
+
+    currency_format = workbook.add_format({'num_format': '#,##0'})
+
+    # Calculate statistics
+    mean = sum(grades) / float(len(grades))
+    med = median(grades)
+    std_dev = stdev(grades)
+
+    
+    # Options for the table
+    data = [[mean, med, std_dev]]
+
+    options = {'data': data,
+           'total_row': 1,
+           'columns': [{'header': 'Mean'},
+                       {'header': 'Median',
+                        'format': currency_format,
+                        },
+                       {'header': 'Standard Deviation',
+                        'format': currency_format,
+                        }
+                       ]}
+
+
+    worksheet.add_table('D3:F5', options)
 
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
 
-    print("Report Generated u\u2713")
+    print("Report Generated \u2713")
