@@ -20,7 +20,7 @@ class Utilities:
             return Utilities.correct_input(contents)
         except IOError as e:
             print("ERROR: " + e.strerror)
-            sys.exit()
+            raise e
 
     @staticmethod
     def run_program(path):
