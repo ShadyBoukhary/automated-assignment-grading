@@ -1,15 +1,16 @@
 import os
 import sys
 
+import data.report.report_generator as report_generator
 from core.assignment import Assignment
 from core.individual_assignment import IndividualAssignment
 from core.student import Student
-from data_service.data_service import DataService
+from data.data_service.data_service import DataService
 from utils.constants import Constants
 from utils.utilities import Utilities
 
 
-def grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment):
+def grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment):
     """Grades an assignment
 
     Grades an assignment based on a comparison between the rubric output and the student
@@ -20,13 +21,13 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
         rubric_file_contents (str): The output of the rubric file
         assignment_file_contents (str): The output of the student file
         individual_assignment (IndividualAssignment): The student's assignment being evaluated
+        assignment (Assignment): The course assignment
 
     Returns:
         IndividualAssignment: The updated student's assignment
 
     """
 
-    grade = 100
     if rubric_file_contents == assignment_file_contents:
         print("PASSED " + u'\u2713')
     else:
@@ -41,28 +42,28 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
         #print(split_rubric)
         #print(split_assignment)
         length = length_rubric if length_rubric < length_assignment else length_assignment
-        line_weights = Utilities.read_file(individual_assignment.get_weights_file_path())
+        line_weights = Utilities.read_file(assignment.get_weights_file_path())
         line_weights = line_weights.split()
-        wrong_lines = []
         # check for line-by-line inequality
         #print(length)
         for i in range(length):
             #print(split_rubric[i] + " VS " + split_assignment[i])
             #print(i)
             if split_rubric[i] != split_assignment[i]:
-                wrong_lines.append(i + 1)
-                grade = grade - float(line_weights[i])
+                individual_assignment.wrong_lines.append(i + 1)
+                individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
 
         if length_rubric > length_assignment:
             print("Student's answer is shorter than the rubric, deducting grades of missing lines.")
-            grade = grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
+            individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
             
         else:
             # TODO: Figure out how to handle this situation
             print("CASE NOT HANDLED")
 
-        print("RESULT - Wrong answers: " + str(len(wrong_lines)) + " | Wrong lines: " + str(wrong_lines) + " | Grade: " + str(round(grade)))
+        print("RESULT - Wrong answers: " + str(len(individual_assignment.wrong_lines)) + " | Wrong lines: " + str(individual_assignment.wrong_lines) + " | Grade: " + str(round(individual_assignment.grade)))
 
+    return individual_assignment
 
 
 def run_assignment_executable(individual_assignment):
@@ -83,34 +84,54 @@ def run_assignment_executable(individual_assignment):
     Utilities.run_program(shell_command)
     return relative_output_path
 
+def grade_assignmets(students, assignment):
+    """Grade Assignments
+
+    Loops through all students and clones, runs, and grades their assignments.
+    It keeps track of all skipped assignments if one grading procedure fails.
+
+    Args:
+        students ([Student]): List of students to grade assignments for
+        assignment (Assignment): Course assignment to be graded
+
+    Returns:
+        Assignment: Course assignment containing all individual assignments with results
+
+    """
+
+    data_service = DataService()
+
+    # Loop through individual assignments
+    for current_student in students:
+
+        # Create and add individual assignment to list 
+        individual_assignment = IndividualAssignment(assignment.repo_name, current_student, assignment.course_name)
+        assignment.individual_assignments.append(individual_assignment)
+        #data_service.get_user_repos("shadyboukhary")
+        # clone the current student's assignment 
+        data_service.clone_repo(current_student, assignment)
+
+        relative_output_path = run_assignment_executable(individual_assignment)
+
+
+        try:
+            rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
+            assignment_file_contents = Utilities.read_file(relative_output_path)
+            #print(rubric_file_contents)
+            #print(assignment_file_contents)
+            individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
+        except IOError as e:
+            # Keep track of skipped assignments due to errors
+            assignment.skipped_assignments.append((individual_assignment, e.strerror))
+
+    return assignment
+
 def main():
     
-    data_service = DataService()
     repo_name = "test-cpp"
-    skipped_assignments = []
-    current_student = Student("Shady Boukhary", "shadyboukhary")
-    assignment = Assignment(repo_name, "CMPS-3410", [current_student])
-    individual_assignment = IndividualAssignment(assignment.repo_name, current_student, assignment.course_name)
-    #data_service.get_user_repos("shadyboukhary")
-    data_service.clone_repo(current_student, assignment)
-
-    relative_output_path = run_assignment_executable(individual_assignment)
-
-
-    try:
-        rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
-        assignment_file_contents = Utilities.read_file(relative_output_path)
-        #print(rubric_file_contents)
-        #print(assignment_file_contents)
-        grade_assignment(rubric_file_contents, assignment_file_contents, assignment)
-    except IOError as e:
-        # Keep track of skipped assignments due to errors
-        skipped_assignments.append((individual_assignment, e.strerror))
-    
-
-    
-    
-
-
+    students = [Student("Shady Boukhary", "shadyboukhary")]
+    assignment = Assignment(repo_name, "CMPS-3410", [])
+    assignment = grade_assignmets(students, assignment)
+    report_generator.generate_report(assignment)
 
 main()
