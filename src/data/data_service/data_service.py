@@ -3,10 +3,12 @@ import sys
 import requests
 from git import Repo
 from git.exc import GitError
+import json
 
 from utils.constants import Constants
 from utils.utilities import Utilities
 from core.student import Student
+from core.assignment import Assignment
 
 
 class DataService:
@@ -20,6 +22,16 @@ class DataService:
             sys.exit("Could not read students file. Please make sure the following file exists: "+ assignment.get_students_file_path())
 
     
+
+    def get_assignments(self):
+        return Utilities.json_deserialize(Utilities.get_assignment_data_file_path())
+
+    def save_assignments(self, assignments):
+        try:
+            Utilities.json_serialize(Utilities.get_assignment_data_file_path(), assignments)
+        except json.JSONDecodeError as e:
+            raise e
+
     def clone_repo(self, current_student, assignment):
         """Clones a github repo for a specific username into a specific directory
         
@@ -44,5 +56,5 @@ class DataService:
                 Repo.clone_from(path_to_clone_from, path_to_clone_to)
 
             except GitError as e:
-                print(e)
                 raise e
+

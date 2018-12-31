@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from utils.constants import Constants
 
 class Utilities:
@@ -21,6 +22,31 @@ class Utilities:
         except IOError as e:
             print("ERROR: " + e.strerror)
             raise e
+
+    @staticmethod
+    def json_deserialize(filename):
+        try:
+            f = open(filename, "r")
+            contents = json.load(f)
+            f.close()
+            return contents
+        except IOError as e:
+            print("FILE ERROR: " + e.strerror)
+            raise e
+        except json.JSONDecodeError as e:
+            print("JSON ERROR: " + e)
+
+    @staticmethod
+    def json_serialize(filename, obj):
+        try:
+            f = open(filename, "w")
+            json.dump(obj, f)
+            f.close()
+        except IOError as e:
+            print("FILE ERROR: " + e.strerror)
+            raise e
+        except json.JSONDecodeError as e:
+            print("JSON ERROR: " + e)
 
     @staticmethod
     def run_program(path):            
@@ -51,3 +77,7 @@ class Utilities:
     @staticmethod
     def create_dir(path):
         os.makedirs(path)
+
+    @staticmethod
+    def get_assignment_data_file_path():
+        Utilities.get_full_dir_path() + "/../../resources/assignment_list.dat"

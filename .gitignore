@@ -1,3 +1,7 @@
 tests/*/*/build/
 */main
 *.pyc
+reports/
+.vscode/
+*/*/__pycache__
+.DS_Store

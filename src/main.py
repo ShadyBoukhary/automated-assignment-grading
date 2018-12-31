@@ -1,6 +1,7 @@
 import os
 import sys
-
+import json
+from git.exc import GitCommandError
 import data.report.report_generator as report_generator
 from core.assignment import Assignment
 from core.individual_assignment import IndividualAssignment
@@ -12,6 +13,7 @@ from utils.utilities import Utilities
 
 def load_students(assignment):
 
+    print("Retrieving student data...")
     data_service = DataService()
     return data_service.load_students(assignment)
 
@@ -37,27 +39,25 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
         print("PASSED " + u'\u2713')
     else:
         print("DID NOT PASS, attempting line-by-line evaluation...")
-        #print(rubric_file_contents)
         split_rubric = rubric_file_contents.split('\n')
         split_assignment = assignment_file_contents.split('\n')
         length_rubric = len(split_rubric)
         length_assignment = len(split_assignment)
     
         # loop according to shortest string
-        #print(split_rubric)
-        #print(split_assignment)
         length = length_rubric if length_rubric < length_assignment else length_assignment
         line_weights = Utilities.read_file(assignment.get_weights_file_path())
         line_weights = line_weights.split()
+
         # check for line-by-line inequality
-        #print(length)
         for i in range(length):
-            #print(split_rubric[i] + " VS " + split_assignment[i])
-            #print(i)
+
+            #line-by-line inequality and deduct grades
             if split_rubric[i] != split_assignment[i]:
                 individual_assignment.wrong_lines.append(i + 1)
                 individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
 
+        # if student output is missing some data compared to rubric output
         if length_rubric > length_assignment:
             print("Student's answer is shorter than the rubric, deducting grades of missing lines.")
             individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
@@ -97,6 +97,10 @@ def run_assignment_executable(individual_assignment):
 
     return relative_output_path
 
+def print_student_header(student):
+    print("----------------------------------------")
+    print("Student: " + student.name + " | Username: " + student.username)
+
 def grade_assignmets(students, assignment):
     """Grade Assignments
 
@@ -112,33 +116,92 @@ def grade_assignmets(students, assignment):
 
     """
 
+    print("Grading assignments...")
     data_service = DataService()
 
     # Loop through individual assignments
     for current_student in students:
 
         # Create and add individual assignment to list 
+        print_student_header(current_student)
         individual_assignment = IndividualAssignment(assignment.repo_name, current_student, assignment.course_name)
         assignment.individual_assignments.append(individual_assignment)
-        #data_service.get_user_repos("shadyboukhary")
-        # clone the current student's assignment 
 
         try:
+            # clone the current student's assignment 
             data_service.clone_repo(current_student, assignment)
-
+            # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment)
-
+            # get the rubric output file contents
             rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
+            # get the student output file contents
             assignment_file_contents = Utilities.read_file(relative_output_path)
-            #print(rubric_file_contents)
-            #print(assignment_file_contents)
+            # grade assignment
             individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
         except IOError as e:
             # Keep track of skipped assignments due to errors
             print(e.strerror)
             assignment.skipped_assignments.append((individual_assignment, e.strerror))
 
+        # Handle other errors
+        except GitCommandError as e:
+            print("Failed to clone repo... skipping student")
+            assignment.skipped_assignments.append((individual_assignment, e))
+
+
     return assignment
+
+def get_assignments():
+    data_service = DataService()
+    try:
+        return data_service.get_assignments()
+    except IOError:
+        sys.exit("Failed to retreve assignments. Make sure that the file exists.")
+    except json.JSONDecodeError:
+        sys.exit("JSON File is corrupted. Failed to retrieve assignments")
+
+def save_assignments(assignments):
+    data_service = DataService()
+    try:
+        data_service.save_assignments(assignments)
+    except Exception:
+        print("Failed to save data... Try again.")
+
+def enter_new_assignment():
+    print("--------------------------")
+    course_name = input("Course name (e.g: CMPS-3410): ")
+    repo_name = input("Repository name (this will be used when cloning from GitHub): ")
+    confirm = "N"
+    while not confirm.upper() == "Y" or confirm.upper == "N":
+        confirm = input("Save assignment? (Y/n) ")
+        if confirm.upper() == "Y":
+            assignment = Assignment(repo_name, course_name, [])
+            assignments = get_assignments()
+            assignments.append(assignment)
+            save_assignments(assignments)
+            return assignment
+        elif confirm.upper() == "N":
+            print("Cancelled.")
+            return None
+        else:
+            print("Try again.")
+
+def get_assignment_to_grade():
+    assignments = get_assignments()
+    try_again = True
+    print("-----------------------------")
+    for assignment in assignments:
+        print(assignment.repo_name + "\n")
+    print("\nEnter the name of the repo to start grading assignments")
+    while try_again:
+        repo_name = input()
+        found = [assignment if assignment.repo_name == repo_name else None for assignment in assignments]
+        if found[0] == None:
+            print("Try again.")
+        else:
+            try_again = False
+            return found[0]
+
 
 def main():
     
