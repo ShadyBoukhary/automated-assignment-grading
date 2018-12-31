@@ -23,7 +23,7 @@ class Utilities:
             raise e
 
     @staticmethod
-    def run_program(path):
+    def run_program(path):            
         os.system(path)
 
     @staticmethod
@@ -47,3 +47,7 @@ class Utilities:
     def get_full_dir_path():
         full_executable_path = os.path.realpath(__file__)
         return os.path.dirname(full_executable_path)
+
+    @staticmethod
+    def create_dir(path):
+        os.makedirs(path)

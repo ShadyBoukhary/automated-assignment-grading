@@ -2,12 +2,23 @@ import sys
 
 import requests
 from git import Repo
+from git.exc import GitError
 
 from utils.constants import Constants
 from utils.utilities import Utilities
+from core.student import Student
 
 
 class DataService:
+
+    def load_students(self, assignment):
+        try:
+            contents = Utilities.read_file(assignment.get_students_file_path())
+            return [Student(s.split()[0] + " " + s.split()[1], s.split()[2]) for s in contents.splitlines()]
+        except:
+            print()
+            sys.exit("Could not read students file. Please make sure the following file exists: "+ assignment.get_students_file_path())
+
     
     def clone_repo(self, current_student, assignment):
         """Clones a github repo for a specific username into a specific directory
@@ -29,4 +40,9 @@ class DataService:
             local_repo.remotes.origin.pull()
         else:
             print("Cloning " + path_to_clone_from + " to " + path_to_clone_to)
-            Repo.clone_from(path_to_clone_from, path_to_clone_to)
+            try:
+                Repo.clone_from(path_to_clone_from, path_to_clone_to)
+
+            except GitError as e:
+                print(e)
+                raise e

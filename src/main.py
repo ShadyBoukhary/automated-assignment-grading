@@ -10,6 +10,11 @@ from utils.constants import Constants
 from utils.utilities import Utilities
 
 
+def load_students(assignment):
+
+    data_service = DataService()
+    return data_service.load_students(assignment)
+
 def grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment):
     """Grades an assignment
 
@@ -79,9 +84,17 @@ def run_assignment_executable(individual_assignment):
     """
 
     executable_path = individual_assignment.get_local_repo_path() + "/main" + Utilities.get_os_file_extension()
+
+    if not Utilities.path_exists(executable_path):
+        err_message = "Executable path does not exist: " + executable_path
+        e = IOError(err_message)
+        e.strerror = err_message
+        raise e
+
     relative_output_path = individual_assignment.get_output_path()
     shell_command = executable_path + Constants.OUT_TO_FILE + relative_output_path
     Utilities.run_program(shell_command)
+
     return relative_output_path
 
 def grade_assignmets(students, assignment):
@@ -109,12 +122,12 @@ def grade_assignmets(students, assignment):
         assignment.individual_assignments.append(individual_assignment)
         #data_service.get_user_repos("shadyboukhary")
         # clone the current student's assignment 
-        data_service.clone_repo(current_student, assignment)
-
-        relative_output_path = run_assignment_executable(individual_assignment)
-
 
         try:
+            data_service.clone_repo(current_student, assignment)
+
+            relative_output_path = run_assignment_executable(individual_assignment)
+
             rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
             assignment_file_contents = Utilities.read_file(relative_output_path)
             #print(rubric_file_contents)
@@ -122,6 +135,7 @@ def grade_assignmets(students, assignment):
             individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
         except IOError as e:
             # Keep track of skipped assignments due to errors
+            print(e.strerror)
             assignment.skipped_assignments.append((individual_assignment, e.strerror))
 
     return assignment
@@ -129,9 +143,11 @@ def grade_assignmets(students, assignment):
 def main():
     
     repo_name = "test-cpp"
-    students = [Student("Shady Boukhary", "shadyboukhary")]
     assignment = Assignment(repo_name, "CMPS-3410", [])
+    students = load_students(assignment)
+
     assignment = grade_assignmets(students, assignment)
+    print(len(assignment.skipped_assignments))
     report_generator.generate_report(assignment)
 
 main()

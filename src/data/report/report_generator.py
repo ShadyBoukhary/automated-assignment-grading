@@ -19,10 +19,10 @@ def generate_report(assignment):
     print("Generating report...")
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
-    # grades.append(16)
-    # grades.append(46)
+    grades.append(16)
+    grades.append(46)
 
-    # grades.append(36)
+    grades.append(36)
 
     # grades.append(76)
 
@@ -52,7 +52,7 @@ def generate_report(assignment):
     data_frame = data_frame.reindex(columns=sorted(data_frame.columns))
     
     # Createe Pandas Excel writer with XlsxWriter engine
-    excel_file = assignment.course_name + "_" + assignment.repo_name + "_assignment_report.xlsx"
+    excel_file = assignment.get_reports_dir_path() +  assignment.course_name + "_" + assignment.repo_name + "_assignment_report.xlsx"
     sheet_name = "Report"
 
     writer = pd.ExcelWriter(excel_file, engine="xlsxwriter")

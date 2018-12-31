@@ -14,4 +14,4 @@ class IndividualAssignment:
         return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + self.course_name + "/" + self.repo_name + "/" + self.student.username
 
     def get_output_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.repo_name +  "_" + self.student.username + ".txt"
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.repo_name + "/" + self.repo_name +  "_" + self.student.username + ".txt"
