@@ -239,12 +239,4 @@ def main():
         display_menu()
         option = get_menu_option()
 
-    # repo_name = "test-cpp"
-    # assignment = Assignment(repo_name, "CMPS-3410", [])
-    # students = load_students(assignment)
-
-    # assignment = grade_assignmets(students, assignment)
-    # print(len(assignment.skipped_assignments))
-    # report_generator.generate_report(assignment)
-
 main()
