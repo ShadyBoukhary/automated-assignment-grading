@@ -58,10 +58,12 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
                 individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
 
         # if student output is missing some data compared to rubric output
-        if length_rubric >= length_assignment:
+        if length_rubric > length_assignment:
             print("Student's answer is shorter than the rubric, deducting grades of missing lines.")
             individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
             
+        elif length_rubric == length_assignment:
+            print("Normal Case")
         else:
             # TODO: Figure out how to handle this situation
             print("CASE NOT HANDLED")
