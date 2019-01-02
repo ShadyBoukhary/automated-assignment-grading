@@ -16,7 +16,7 @@ def generate_report(assignment):
         assignment (Assignment): Course assignment containing all individual assignments
 
     """
-    print("Generating report...")
+    print("\nGenerating report...")
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
     grades.append(16)

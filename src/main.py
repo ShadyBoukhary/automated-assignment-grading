@@ -58,7 +58,7 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
                 individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
 
         # if student output is missing some data compared to rubric output
-        if length_rubric > length_assignment:
+        if length_rubric >= length_assignment:
             print("Student's answer is shorter than the rubric, deducting grades of missing lines.")
             individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
             
@@ -145,18 +145,20 @@ def grade_assignmets(students, assignment):
 
         # Handle other errors
         except GitCommandError as e:
-            print("Failed to clone repo... skipping student")
+            print("Git Error - skipping student:" + e.stderr)
             assignment.skipped_assignments.append((individual_assignment, e))
 
 
     return assignment
 
-def get_assignments():
+def get_assignments(checkFirst):
     data_service = DataService()
     try:
+        if checkFirst:
+            data_service.create_assignments_file()
         return data_service.get_assignments()
     except IOError:
-        sys.exit("Failed to retreve assignments. Make sure that the file exists.")
+        sys.exit("Failed to retreve assignments. Make sure that the file exists. Perhaps enter a new assignment first?")
     except json.JSONDecodeError:
         sys.exit("JSON File is corrupted. Failed to retrieve assignments")
 
@@ -164,7 +166,9 @@ def save_assignments(assignments):
     data_service = DataService()
     try:
         data_service.save_assignments(assignments)
-    except Exception:
+        print("Assignment saved!")
+    except Exception as e:
+        print("ERROR: " + e)
         print("Failed to save data... Try again.")
 
 def enter_new_assignment():
@@ -176,7 +180,7 @@ def enter_new_assignment():
         confirm = input("Save assignment? (Y/n) ")
         if confirm.upper() == "Y":
             assignment = Assignment(repo_name, course_name, [])
-            assignments = get_assignments()
+            assignments = get_assignments(True)
             assignments.append(assignment)
             save_assignments(assignments)
             return assignment
@@ -187,30 +191,58 @@ def enter_new_assignment():
             print("Try again.")
 
 def get_assignment_to_grade():
-    assignments = get_assignments()
+    assignments = get_assignments(False)
     try_again = True
-    print("-----------------------------")
+    print("\n--------------- Assignment Repo Names ---------------")
     for assignment in assignments:
         print(assignment.repo_name + "\n")
     print("\nEnter the name of the repo to start grading assignments")
     while try_again:
         repo_name = input()
         found = [assignment if assignment.repo_name == repo_name else None for assignment in assignments]
-        if found[0] == None:
+        if found == [] or found[0] == None:
             print("Try again.")
         else:
             try_again = False
             return found[0]
 
 
-def main():
-    
-    repo_name = "test-cpp"
-    assignment = Assignment(repo_name, "CMPS-3410", [])
-    students = load_students(assignment)
+def display_menu():
+    print("Enter the the number of the command.\nCTRL-C to exit.\n")
+    print("1. " + "Grade an Assignments.")
+    print("2. " + "Enter a new assignment.")
 
+def get_menu_option():
+    valid = False 
+    while not valid:
+        try:
+            val = int(input())
+            valid = True
+            return val
+        except ValueError:
+            print("Must be an integer.")
+
+def grade_option_selected():
+    assignment = get_assignment_to_grade()
+    students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
-    print(len(assignment.skipped_assignments))
     report_generator.generate_report(assignment)
+    
+def main():
+    display_menu()
+    option = get_menu_option()
+    while option < 3:
+        grade_option_selected() if option == 1 else enter_new_assignment()
+        print("\n")
+        display_menu()
+        option = get_menu_option()
+
+    # repo_name = "test-cpp"
+    # assignment = Assignment(repo_name, "CMPS-3410", [])
+    # students = load_students(assignment)
+
+    # assignment = grade_assignmets(students, assignment)
+    # print(len(assignment.skipped_assignments))
+    # report_generator.generate_report(assignment)
 
 main()

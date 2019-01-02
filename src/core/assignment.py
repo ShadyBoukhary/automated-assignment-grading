@@ -1,6 +1,6 @@
 from utils.utilities import Utilities
 
-class Assignment:
+class Assignment(dict):
 
     def __init__(self, repo_name, course_name, individual_assignments):
         self.repo_name = repo_name

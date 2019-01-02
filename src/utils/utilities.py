@@ -31,10 +31,10 @@ class Utilities:
             f.close()
             return contents
         except IOError as e:
-            print("FILE ERROR: " + e.strerror)
+            print("FILE ERROR: " + e.strerror + ". FILE: " + filename)
             raise e
         except json.JSONDecodeError as e:
-            print("JSON ERROR: " + e)
+            raise e
 
     @staticmethod
     def json_serialize(filename, obj):
@@ -46,7 +46,7 @@ class Utilities:
             print("FILE ERROR: " + e.strerror)
             raise e
         except json.JSONDecodeError as e:
-            print("JSON ERROR: " + e)
+            print("JSON ERROR: " + str(e))
 
     @staticmethod
     def run_program(path):            
@@ -80,4 +80,4 @@ class Utilities:
 
     @staticmethod
     def get_assignment_data_file_path():
-        Utilities.get_full_dir_path() + "/../../resources/assignment_list.dat"
+        return Utilities.get_full_dir_path() + "/../../resources/assignment_list.dat"

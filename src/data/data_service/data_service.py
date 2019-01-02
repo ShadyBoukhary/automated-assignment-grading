@@ -9,6 +9,7 @@ from utils.constants import Constants
 from utils.utilities import Utilities
 from core.student import Student
 from core.assignment import Assignment
+from core.individual_assignment import IndividualAssignment
 
 
 class DataService:
@@ -24,11 +25,39 @@ class DataService:
     
 
     def get_assignments(self):
-        return Utilities.json_deserialize(Utilities.get_assignment_data_file_path())
+    
+        try:
+            assignment_dicts =  Utilities.json_deserialize(Utilities.get_assignment_data_file_path())
+
+            if assignment_dicts[0] == {}:
+                return []
+            # convert list of dict containing an assignment into list of Assignment objects
+            return [Assignment(a_dict["repo_name"], a_dict["course_name"], 
+            [IndividualAssignment(i_dict["repo_name"],
+            Student(i_dict["student"]["name"], i_dict["student"]["username"]),
+            i_dict["course_name"]) 
+            for i_dict in a_dict["individual_assignments"]]) 
+            for a_dict in assignment_dicts]
+
+        except json.JSONDecodeError:
+            print("No assignments found or file is corrupted.")
+            return []
+
+    # def assignments_dict_to_object(assignment_dicts):
+    #     return
 
     def save_assignments(self, assignments):
+        """Saves all assignments to a JSON file
+
+        Args:
+            assignments ([Assignment]): the list of assignments to save
+
+        Raises:
+            JSONDecoderError
+        """
+
         try:
-            Utilities.json_serialize(Utilities.get_assignment_data_file_path(), assignments)
+            Utilities.json_serialize(Utilities.get_assignment_data_file_path(), [assignment.__dict__ for assignment in assignments])
         except json.JSONDecodeError as e:
             raise e
 
@@ -57,4 +86,11 @@ class DataService:
 
             except GitError as e:
                 raise e
+
+
+    def create_assignments_file(self):
+        """ Creates the file containing the assignments if it does not exist"""
+
+        if not Utilities.path_exists(Utilities.get_assignment_data_file_path()):
+            open(Utilities.get_assignment_data_file_path(), 'a').close()
 
