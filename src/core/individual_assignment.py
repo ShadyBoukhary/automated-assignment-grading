@@ -15,3 +15,9 @@ class IndividualAssignment:
 
     def get_output_path(self):
         return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.repo_name + "/" + self.repo_name +  "_" + self.student.username + ".txt"
+    
+    def get_compile_output_dir(self):
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.repo_name + "/" + "compile-temp/"
+    
+    def get_compile_output_path(self):
+        return self.get_compile_output_dir() + self.repo_name +  "_" + self.student.username + ".txt"
