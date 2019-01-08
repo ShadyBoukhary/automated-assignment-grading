@@ -16,6 +16,15 @@ from utils.utilities import Utilities
 
 
 def load_students(assignment):
+    """Loads all students from disk for an assignment
+
+    Args:
+        (Assignment): the assignment to retrieve students for
+
+    Returns:
+        ([Student]): list of students for that assignment
+        
+    """
 
     print("Retrieving student data...")
     data_service = DataService()
@@ -166,17 +175,28 @@ def grade_assignmets(students, assignment):
     return assignment
 
 def get_assignments(checkFirst):
+    """Gets all assignments from disk 
+    
+    Args:
+        checkFirst (boolean): Flag indicating whether to check if the assignment file exists
+
+    Returns:
+        ([Assignment]): list of assignments
+
+    """
     data_service = DataService()
     try:
         if checkFirst:
             data_service.create_assignments_file()
         return data_service.get_assignments()
     except IOError:
-        sys.exit("Failed to retreve assignments. Make sure that the file exists. Perhaps enter a new assignment first?")
+        sys.exit("Failed to retrieve assignments. Make sure that the file exists. Perhaps enter a new assignment first?")
     except json.JSONDecodeError:
         sys.exit("JSON File is corrupted. Failed to retrieve assignments")
 
 def save_assignments(assignments):
+    """Saves assignmetns on disk """
+    
     data_service = DataService()
     try:
         data_service.save_assignments(assignments)
@@ -186,6 +206,12 @@ def save_assignments(assignments):
         print("Failed to save data... Try again.")
 
 def enter_new_assignment():
+    """Prompts the user to enter a new assignment
+    
+    Returns:
+        (Assignment): The newly created assignment
+
+    """
     print("--------------------------")
     course_name = input("Course name (e.g: CMPS-3410): ")
     repo_name = input("Repository name (this will be used when cloning from GitHub): ")
@@ -205,6 +231,13 @@ def enter_new_assignment():
             print("Try again.")
 
 def get_assignment_to_grade():
+    """Retrieves an assignment to grade
+    
+    Returns:
+        (Assignment): the assignment to grade
+
+     """
+
     assignments = get_assignments(False)
     try_again = True
     print("\n--------------- Assignment Repo Names ---------------")
@@ -221,6 +254,8 @@ def get_assignment_to_grade():
             return found[0]
 
 def grade():
+    """Grades an assignment for all students and generates a report """
+
     assignment = get_assignment_to_grade()
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
