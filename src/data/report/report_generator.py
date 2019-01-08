@@ -1,7 +1,8 @@
 import random
 from collections import Counter
 from statistics import median, stdev
-
+from utils.constants import Constants
+from utils.utilities import Utilities
 import pandas as pd
 
 
@@ -16,7 +17,7 @@ def generate_report(assignment):
         assignment (Assignment): Course assignment containing all individual assignments
 
     """
-    print("\nGenerating report...")
+    Utilities.log("\nGenerating report... ", True)
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
     grades.append(16)
@@ -116,4 +117,4 @@ def generate_report(assignment):
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
 
-    print("Report Generated \u2713")
+    Utilities.log(Constants.CHECK_MARK)

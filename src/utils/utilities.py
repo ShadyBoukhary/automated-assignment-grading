@@ -24,6 +24,15 @@ class Utilities:
             raise e
 
     @staticmethod
+    def append_file(filename, str):
+        try:
+            f = open(filename, "a")
+            f.write(str + "\n")
+        except IOError as e:
+            print("ERROR: " + e.strerror)
+            raise e
+
+    @staticmethod
     def json_deserialize(filename):
         try:
             f = open(filename, "r")
@@ -92,5 +101,21 @@ class Utilities:
         return Utilities.get_full_dir_path() + "/../../resources/assignment_list.dat"
 
     @staticmethod
+    def get_log_path():
+        path = Utilities.get_full_dir_path() + "/../../logs/log.txt"
+        if not Utilities.path_exists(path):
+            Utilities.create_dir(Utilities.get_full_dir_path() + "/../../logs/")
+        return Utilities.get_full_dir_path() + "/../../logs/log.txt"
+
+    @staticmethod
     def delete_file(path):
         os.remove(path)
+
+    @staticmethod
+    def flush():
+        sys.stdout.flush()
+
+    @staticmethod
+    def log(str, end=False):
+        print(str, end="") if end else print(str)
+        Utilities.append_file(Utilities.get_log_path(), str)

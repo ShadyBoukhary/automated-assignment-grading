@@ -2,19 +2,22 @@ from core.assignment import Assignment
 from core.individual_assignment import IndividualAssignment
 from custom.compilation_exception import CompilationException
 from utils.utilities import Utilities
+from utils.constants import Constants
 
 
 def analyze_source(path, assignment, individual_assignment):
+    Utilities.log("Compiling... ", True)
+    Utilities.flush()
     try:
         result, error = verify_compilation(path, individual_assignment.get_compile_output_dir(), individual_assignment.get_compile_output_path(), "cpp")
         if result:
             source = Utilities.read_file(path)
             # TODO: Keep track of functions in source, maybe loops too?
-            print("Compiles!")
+            Utilities.log(Constants.CHECK_MARK)
         else:
-            raise CompilationException("Source code does not compile!", error)
+            raise CompilationException(Constants.CROSS_MARK, error)
     except IOError as e:
-        print(e)
+        Utilities.log(e)
 
 
 def verify_compilation(path, compile_output_dir, compile_output_path, language):

@@ -48,10 +48,12 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
 
     """
 
+    Utilities.log("1st PASS... ", True)
+    Utilities.flush()
     if rubric_file_contents == assignment_file_contents:
-        print("PASSED " + u'\u2713')
+        Utilities.log(Constants.CHECK_MARK)
     else:
-        print("DID NOT PASS, attempting line-by-line evaluation...")
+        Utilities.log(Constants.CROSS_MARK + "\n" + "attempting line-by-line evaluation...")
         split_rubric = rubric_file_contents.split('\n')
         split_assignment = assignment_file_contents.split('\n')
         length_rubric = len(split_rubric)
@@ -72,14 +74,14 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
 
         # if student output is missing some data compared to rubric output
         if length_rubric > length_assignment:
-            print("Student's answer is shorter than the rubric, deducting grades of missing lines.")
+            Utilities.log("Student's answer is shorter than the rubric, deducting grades of missing lines.")
             individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
             
         elif length_rubric == length_assignment:
-            print("Normal Case")
+            Utilities.log("Normal Case")
         else:
             # TODO: Figure out how to handle this situation
-            print("CASE NOT HANDLED")
+            Utilities.log("CASE NOT HANDLED")
 
     return individual_assignment
 
@@ -111,8 +113,8 @@ def run_assignment_executable(individual_assignment):
     return relative_output_path
 
 def print_student_header(student):
-    print("----------------------------------------")
-    print("Student: " + student.name + " | Username: " + student.username)
+    Utilities.log("----------------------------------------")
+    Utilities.log("Student: " + student.name + " | Username: " + student.username)
 
 def grade_assignmets(students, assignment):
     """Grade Assignments
@@ -129,7 +131,7 @@ def grade_assignmets(students, assignment):
 
     """
 
-    print("Grading assignments...")
+    Utilities.log("Grading assignments...")
     data_service = DataService()
 
     # Loop through individual assignments
@@ -156,21 +158,21 @@ def grade_assignmets(students, assignment):
 
         except IOError as e:
             # Keep track of skipped assignments due to errors
-            print(e.strerror)
+            Utilities.log(e.strerror)
             assignment.skipped_assignments.append((individual_assignment, e.strerror))
 
         # Handle other errors
         except GitCommandError as e:
-            print("Git Error - skipping student:" + e.stderr)
+            Utilities.log("Git Error - skipping student:" + e.stderr)
             assignment.skipped_assignments.append((individual_assignment, e))
 
         except CompilationException as e:
-            print(e.message)
+            Utilities.log(e.message)
             # TODO decide how much to deduct exactly
             individual_assignment.grade = 0
 
         finally:
-            print("RESULT - Wrong answers: " + str(len(individual_assignment.wrong_lines)) + " | Wrong lines: " + str(individual_assignment.wrong_lines) + " | Grade: " + str(round(individual_assignment.grade)))
+            Utilities.log("RESULT - Wrong answers: " + str(len(individual_assignment.wrong_lines)) + " | Wrong lines: " + str(individual_assignment.wrong_lines) + " | Grade: " + str(round(individual_assignment.grade)))
 
     return assignment
 
@@ -200,10 +202,10 @@ def save_assignments(assignments):
     data_service = DataService()
     try:
         data_service.save_assignments(assignments)
-        print("Assignment saved!")
+        Utilities.log("Assignment saved!")
     except Exception as e:
-        print("ERROR: " + e)
-        print("Failed to save data... Try again.")
+        Utilities.log("ERROR: " + e)
+        Utilities.log("Failed to save data... Try again.")
 
 def enter_new_assignment():
     """Prompts the user to enter a new assignment
@@ -212,7 +214,7 @@ def enter_new_assignment():
         (Assignment): The newly created assignment
 
     """
-    print("--------------------------")
+    Utilities.log("--------------------------")
     course_name = input("Course name (e.g: CMPS-3410): ")
     repo_name = input("Repository name (this will be used when cloning from GitHub): ")
     confirm = "N"
@@ -225,10 +227,10 @@ def enter_new_assignment():
             save_assignments(assignments)
             return assignment
         elif confirm.upper() == "N":
-            print("Cancelled.")
+            Utilities.log("Cancelled.")
             return None
         else:
-            print("Try again.")
+            Utilities.log("Try again.")
 
 def get_assignment_to_grade():
     """Retrieves an assignment to grade
@@ -240,15 +242,15 @@ def get_assignment_to_grade():
 
     assignments = get_assignments(False)
     try_again = True
-    print("\n--------------- Assignment Repo Names ---------------")
+    Utilities.log("\n--------------- Assignment Repo Names ---------------")
     for assignment in assignments:
-        print(assignment.repo_name + "\n")
-    print("\nEnter the name of the repo to start grading assignments")
+        Utilities.log(assignment.repo_name + "\n")
+    Utilities.log("\nEnter the name of the repo to start grading assignments")
     while try_again:
         repo_name = input()
         found = [assignment if assignment.repo_name == repo_name else None for assignment in assignments]
         if found == [] or found[0] == None:
-            print("Try again.")
+            Utilities.log("Try again.")
         else:
             try_again = False
             return found[0]

@@ -11,3 +11,5 @@ class Constants:
 
     USERS_USERNAMES_MAP = {"Shady Boukhary": "shadyboukhary"}
     CLONE_DIRECTORY = "/automated_grading_repos"
+    CROSS_MARK = "\u274c"
+    CHECK_MARK = "\u2713"
