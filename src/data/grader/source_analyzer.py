@@ -18,6 +18,19 @@ def analyze_source(path, assignment, individual_assignment):
 
 
 def verify_compilation(path, compile_output_dir, compile_output_path, language):
+    """Checks whether a source code for an assignment compiles
+    
+    Args:
+        path (String): path of the source code
+        compile_output_dir (String): Output directory of the compilation result
+        compile_output_path (String): Output path of the compilation result file
+        language (String): Programming language to be compiled
+
+    Returns:
+        (boolean, String): Tuple with a flag indicating compilation result and any error messages
+    
+    """
+
     Utilities.compile_source(path, compile_output_dir, compile_output_path, language)
     compile_results = Utilities.read_file(compile_output_path)
     Utilities.delete_file(compile_output_path)
