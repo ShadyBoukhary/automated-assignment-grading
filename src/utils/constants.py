@@ -16,5 +16,6 @@ class Constants:
     CPP_PRIMITIVE_TYPES = [
         "short int", "unsigned short int", "unsigned int", "int",
         "long int", "unsigned long int", "long long int", "unsigned long long int",
-        "signed char", "char", "unsigned char", "float", "double", "long double", "wchar_t,", "void"
+        "signed char", "char", "unsigned char", "float", "double", "long double", "wchar_t,", "void",
+        "string", "std::string"
     ]

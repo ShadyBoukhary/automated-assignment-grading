@@ -1,8 +1,10 @@
 from core.assignment import Assignment
+from core.function import Function
 from core.individual_assignment import IndividualAssignment
+from core.source_report import SourceReport
 from custom.compilation_exception import CompilationException
-from utils.utilities import Utilities
 from utils.constants import Constants
+from utils.utilities import Utilities
 
 
 def analyze_source(path, assignment, individual_assignment):
@@ -13,8 +15,9 @@ def analyze_source(path, assignment, individual_assignment):
         if result:
             source = Utilities.read_file(path)
             # TODO: Keep track of functions in source, maybe loops too?
-            analyze(source, "cpp")
+            source_report = analyze(source, "cpp")
             Utilities.log(Constants.CHECK_MARK)
+            return source_report
         else:
             raise CompilationException(Constants.CROSS_MARK, error)
     except IOError as e:
@@ -23,17 +26,45 @@ def analyze_source(path, assignment, individual_assignment):
 
 def analyze(source, language):
     source = clean_source(source)
-    print(source)
 
     if language == "cpp":
-        analyze_cpp(source)
+        return analyze_cpp(source)
 
 
 def analyze_cpp(source):
-    lines_with_types = [line for line in source if Constants.CPP_PRIMITIVE_TYPES.__contains__(line.split()[0])]
-    print(lines_with_types)
+    source_report = SourceReport(Constants.CPP_PRIMITIVE_TYPES)
+    # get lines starting with a primitive type
+    lines_with_types = get_lines_starting_with_types(source)
+    # filter by lines containing "(" indicating a function, clean the string containing the function
+    lines_with_types = [clean_function_line(line) for line in lines_with_types if line.__contains__("(")]
+    # remove main function from list
+    lines_with_types = [line for line in lines_with_types if not line == "int main"]
+    # generate list of functions (every line is in the format: return_type name arg1 arg2 arg3 ....)
+    functions = [Function(line.split()[1], line.split()[0], get_arguments(line)) for line in lines_with_types]
+    # add functions to report, duplicate ones such as prototypes and definitions are not duplicated
+    for f in functions:
+        source_report.addFunction(f)
+
+    return source_report
 
 
+def get_lines_starting_with_types(source):
+    return [line for line in source if Constants.CPP_PRIMITIVE_TYPES.__contains__(line.split()[0])]
+
+def get_arguments(line):
+    """Get list of arguments from a list of strings representing a function declaration line 
+    
+    Args:
+        line ([String]): list of strings representing a function in the format: return_type name arg1 arg2 arg3
+
+    Returns:
+        ([String]): list containing all argument types e.g ['int', 'float', 'double'] etc..
+    """
+
+    return [arg for arg in line.split()[2:] if Constants.CPP_PRIMITIVE_TYPES.__contains__(arg)]
+
+def clean_function_line(line):
+    return Utilities.correct_input(line.replace(";", "").replace("(", " ").replace(")", "").replace("{", ""))
 
 def clean_source(source):
     return Utilities.correct_input(source).splitlines()

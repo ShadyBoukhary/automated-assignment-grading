@@ -19,7 +19,7 @@ class DataService:
             contents = Utilities.read_file(assignment.get_students_file_path())
             return [Student(s.split()[0] + " " + s.split()[1], s.split()[2]) for s in contents.splitlines()]
         except:
-            print()
+            print(Constants.CROSS_MARK)
             sys.exit("Could not read students file. Please make sure the following file exists: "+ assignment.get_students_file_path())
 
     
@@ -78,19 +78,19 @@ class DataService:
         try:
 
             if Utilities.path_exists(path_to_clone_to):
-                print("Path Exists for username: " + current_student.username  + ", Repo: " + assignment.repo_name + ", Pulling instead... ", end="")
+                Utilities.log("Path Exists for username: " + current_student.username  + ", Repo: " + assignment.repo_name + ", Pulling instead... ", True)
                 Utilities.flush()
                 local_repo = Repo(path_to_clone_to)
                 local_repo.remotes.origin.pull()
-                print(Constants.CHECK_MARK)
+                Utilities.log(Constants.CHECK_MARK)
             else:
-                print("Cloning " + path_to_clone_from + " to " + path_to_clone_to, end="")
+                Utilities.log("Cloning " + path_to_clone_from + " to " + path_to_clone_to + "... ", True)
                 Utilities.flush()
 
                 Repo.clone_from(path_to_clone_from, path_to_clone_to)
-                print(Constants.CHECK_MARK)
+                Utilities.log(Constants.CHECK_MARK)
         except GitError as e:
-            print(Constants.CROSS_MARK)
+            Utilities.log(Constants.CROSS_MARK)
             raise e
 
 

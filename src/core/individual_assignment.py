@@ -9,6 +9,7 @@ class IndividualAssignment:
         self.course_name = course_name
         self.grade = 100
         self.wrong_lines = []
+        self.source_report = None
         
     def get_local_repo_path(self):
         return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + self.course_name + "/" + self.repo_name + "/" + self.student.username

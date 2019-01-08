@@ -119,3 +119,4 @@ class Utilities:
     def log(str, end=False):
         print(str, end="") if end else print(str)
         Utilities.append_file(Utilities.get_log_path(), str)
+        Utilities.flush()

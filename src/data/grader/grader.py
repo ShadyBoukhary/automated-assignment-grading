@@ -26,9 +26,11 @@ def load_students(assignment):
         
     """
 
-    print("Retrieving student data...")
+    Utilities.log("Retrieving student data... ", True)
     data_service = DataService()
-    return data_service.load_students(assignment)
+    students = data_service.load_students(assignment)
+    Utilities.log(Constants.CHECK_MARK)
+    return students
 
 def grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment):
     """Grades an assignment
@@ -77,11 +79,11 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
             Utilities.log("Student's answer is shorter than the rubric, deducting grades of missing lines.")
             individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
             
-        elif length_rubric == length_assignment:
-            Utilities.log("Normal Case")
-        else:
-            # TODO: Figure out how to handle this situation
-            Utilities.log("CASE NOT HANDLED")
+        #elif length_rubric == length_assignment:
+            #Utilities.log("Normal Case")
+        # else:
+        #     # TODO: Figure out how to handle this situation
+        #     Utilities.log("CASE NOT HANDLED")
 
     return individual_assignment
 
@@ -113,7 +115,7 @@ def run_assignment_executable(individual_assignment):
     return relative_output_path
 
 def print_student_header(student):
-    Utilities.log("----------------------------------------")
+    Utilities.log("-------------------------------------------------------------------------------")
     Utilities.log("Student: " + student.name + " | Username: " + student.username)
 
 def grade_assignmets(students, assignment):
@@ -145,6 +147,8 @@ def grade_assignmets(students, assignment):
         try:
             # clone the current student's assignment 
             data_service.clone_repo(current_student, assignment)
+            # check if the source compiles at all
+            source_report = source_analyzer.analyze_source(individual_assignment.get_local_repo_path() + "/main.cpp", assignment, individual_assignment)
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment)
             # get the rubric output file contents
@@ -153,8 +157,8 @@ def grade_assignmets(students, assignment):
             assignment_file_contents = Utilities.read_file(relative_output_path)
             # grade assignment
             individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
-            # check if the source compiles at all
-            source_analyzer.analyze_source(individual_assignment.get_local_repo_path() + "/main.cpp", assignment, individual_assignment)
+            # copy source report to individual assignment
+            individual_assignment.source_report = source_report
 
         except IOError as e:
             # Keep track of skipped assignments due to errors
@@ -172,7 +176,8 @@ def grade_assignmets(students, assignment):
             individual_assignment.grade = 0
 
         finally:
-            Utilities.log("RESULT - Wrong answers: " + str(len(individual_assignment.wrong_lines)) + " | Wrong lines: " + str(individual_assignment.wrong_lines) + " | Grade: " + str(round(individual_assignment.grade)))
+            strr = " | Functions: " + str(len(individual_assignment.source_report.functions)) if not individual_assignment.source_report == None else ""
+            Utilities.log("RESULT - Wrong answers: " + str(len(individual_assignment.wrong_lines)) + " | Wrong lines: " + str(individual_assignment.wrong_lines) + " | Grade: " + str(round(individual_assignment.grade)) + strr)
 
     return assignment
 
