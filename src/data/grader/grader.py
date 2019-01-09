@@ -4,7 +4,7 @@ import sys
 import re
 
 from git.exc import GitCommandError
-
+from autocorrect import spell
 import data.grader.source_analyzer as source_analyzer
 import data.report.report_generator as report_generator
 from core.assignment import Assignment
@@ -73,7 +73,10 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
             #line-by-line inequality and deduct grades
             if not equal_lines(split_rubric[i], split_assignment[i], assignment):
                 individual_assignment.wrong_lines.append(i + 1)
-                individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
+                try:
+                    individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
+                except IndexError:
+                    sys.exit("The Weights file is misconfigured. It might be shorter than the rubric. Cannot grade until fixed.")
 
         # if student output is missing some data compared to rubric output
         if length_rubric > length_assignment:
@@ -122,22 +125,22 @@ def equal_lines(rubric_line, student_line, assignment):
 
     # remove table characters if table formatting is enabled
     if assignment.table_formatting:
-        rubric_line = re.sub(r"[^a-zA-Z0-9]+", ' ', rubric_line)
-        student_line = re.sub(r"[^a-zA-Z0-9]+", ' ', student_line)
+        rubric_line = re.sub(r"[^a-zA-Z0-9]+", lambda x: '.' if x.group() == '.' else ' ', rubric_line)
+        student_line = re.sub(r"[^a-zA-Z0-9]+", lambda x: '.' if x.group() == '.' else ' ', student_line)
+
+    # split result by spaces
+    rubric_split = rubric_line.split()
+    student_split = student_line.split()
 
     # if strings don't matter, extract and compare the numbers using the above tolerance
     if not assignment.strings_matter:
         # remove non-numbers
-        rubric_line = ''.join([word for word in rubric_line.split() if Utilities.is_number(word)])
-        student_line = ''.join([word for word in student_line.split() if Utilities.is_number(word)])
-
-        # split result by spaces
-        rubric_split = rubric_line.split()
-        student_split = student_line.split()
+        rubric_line = ' '.join([word for word in rubric_line.split() if Utilities.is_number(word)])
+        student_line = ' '.join([word for word in student_line.split() if Utilities.is_number(word)])
 
         # loop over remaining numbers after splitting
-        for i in range(len(rubric_line)):
-            if (Utilities.is_number(rubric_line[i])):
+        for i in range(len(rubric_split)):
+            if (Utilities.is_number(rubric_split[i])):
                 if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
                     return False
             else:
@@ -146,10 +149,19 @@ def equal_lines(rubric_line, student_line, assignment):
         return True
 
     else:
-        return rubric_line == student_line
+        for i in range(len(rubric_split)):
 
+            if not Utilities.is_number(rubric_split[i]):
+                if not words_hash_is_equal(rubric_split[i], student_split[i]):
+                    return False
+            else:
+                if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
+                    return False
+        return True
 
-
+def words_hash_is_equal(rubric, student):
+    # TODO: Find a better way? or at least compare with a multitude of possibilites not just the most likely one
+    return spell(rubric) == spell(student)
 
 def run_assignment_executable(individual_assignment):
     """Runs executable file of an assignment and dumps the output to a file

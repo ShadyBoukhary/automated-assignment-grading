@@ -2,7 +2,7 @@ from utils.utilities import Utilities
 
 class Assignment(dict):
 
-    def __init__(self, repo_name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = False):
+    def __init__(self, repo_name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True):
         self.repo_name = repo_name
         self.course_name = course_name
         self.individual_assignments = individual_assignments
