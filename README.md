@@ -31,6 +31,10 @@ AAA also requires:
     * Verify existence of required functions and methods
     * Check for poor variable names
     * Keep track of loop count
+* Gives the user the option to choose tolerance amount for floating-point numbers
+* Gives user the option to ignore student-written descriptions that do not contribute to the solution
+* Ignores ASCII table formatting in console apps when needed
+* Uses a spellchecker to give leeway on typos in student solutions
 
 ### Current Limitations
 * Support is exclusive to GitHub
@@ -38,13 +42,11 @@ AAA also requires:
 * Requires executable output to be to the console and not a file
 * Does not support assignments that include command-line arguments
 * Executable files must be compatible with the machine running the system
-* Student output must match key exactly
-  * Could result in inaccurate evalutions for
-    * Floating point numbers and precision
-    * Output with student-made desctiptions
-      * E.g `The number of books is 9` or `number of books: 9`
-    * Small typos
-  * Requires all student output to be consistent
+* Output with student-made desctiptions forces all strings to be ignored
+    * E.g `The number of books is 9` or `number of books: 9` is handled by only comparing numerical values. However, if meaningful strings are also present somewhere else in the key, they will be ignored.
+      * Possible solution: enable this feature per line rather than per assignment
+* Requires all student output to be consistent
+  * Obvious and necessary for all kinds of automated solutions
 
 ### Future Work
 All limitations are planned to be resolved.
@@ -56,9 +58,5 @@ All limitations are planned to be resolved.
 * Cross-platform issues will be resolved by
   * Not requiring executables but relying soley on compiling the code
     * This could be a problem when multiple source files exist
-  * Student ouput and key do not have to match 100%
-    * Allowing accuracy by a number of decimal points for floating-point numbers will be added
-    * Ignoring custom strings like the ones described above that precede the actual results
-    * Ignoring output formatting for assignments requiring tables
-      * E.g ignoring characters like `-` or `*` when needed
+
 
