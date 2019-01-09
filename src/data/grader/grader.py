@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import re
 
 from git.exc import GitCommandError
 
@@ -70,7 +71,7 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
         for i in range(length):
 
             #line-by-line inequality and deduct grades
-            if split_rubric[i] != split_assignment[i]:
+            if not equal_lines(split_rubric[i], split_assignment[i], assignment):
                 individual_assignment.wrong_lines.append(i + 1)
                 individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
 
@@ -86,6 +87,68 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
         #     Utilities.log("CASE NOT HANDLED")
 
     return individual_assignment
+
+def equal_lines(rubric_line, student_line, assignment):
+    """Compares 1 line in the key to 1 line in the student output
+    
+    The comparison takes into account precision issues for numbers, ASCII table formatting,
+    and strings that simply discribe the output but are not a part of the solution itself.
+
+    The algorithm uses the tolerance within the assignment to determine how many significant
+    digits to consider when comparing floats. If strings do not matter in the solution (i.e. 
+    strings merely describe the output but are not a part of the solution), strings are ignored
+    and numbers are extracted from the output instead. In addition, if the assignment includes
+    some table formatting, special characters are filtered out of the output to prevent issues
+    when comparing solutions with slightly different table formatting.
+
+    Args:
+        rubric_line (String): the line in the key to be evaluated against
+        student_line (String): the line in the student output being evaluated
+        assignment (Assignment): the current course assignment being evaluated
+
+    Returns:
+        (boolean): whether the lines are considered equal by the above standards
+    
+    """
+
+    # find tolerance
+    tolerance = 1e-09
+    if assignment.tolerance == 1:
+        tolerance = 1e-06
+    elif assignment.tolerance == 2:
+        tolerance= 1e-03
+    elif assignment.tolerance == 3:
+        tolerance = 1e-01
+
+    # remove table characters if table formatting is enabled
+    if assignment.table_formatting:
+        rubric_line = re.sub(r"[^a-zA-Z0-9]+", ' ', rubric_line)
+        student_line = re.sub(r"[^a-zA-Z0-9]+", ' ', student_line)
+
+    # if strings don't matter, extract and compare the numbers using the above tolerance
+    if not assignment.strings_matter:
+        # remove non-numbers
+        rubric_line = ''.join([word for word in rubric_line.split() if Utilities.is_number(word)])
+        student_line = ''.join([word for word in student_line.split() if Utilities.is_number(word)])
+
+        # split result by spaces
+        rubric_split = rubric_line.split()
+        student_split = student_line.split()
+
+        # loop over remaining numbers after splitting
+        for i in range(len(rubric_line)):
+            if (Utilities.is_number(rubric_line[i])):
+                if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
+                    return False
+            else:
+                if not rubric_split[i] == student_split[i]:
+                    return False
+        return True
+
+    else:
+        return rubric_line == student_line
+
+
 
 
 def run_assignment_executable(individual_assignment):

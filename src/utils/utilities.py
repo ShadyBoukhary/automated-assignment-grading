@@ -120,3 +120,15 @@ class Utilities:
         print(str, end="") if end else print(str)
         Utilities.append_file(Utilities.get_log_path(), str)
         Utilities.flush()
+
+    @staticmethod
+    def is_number(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+    @staticmethod
+    def is_close(a, b, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
