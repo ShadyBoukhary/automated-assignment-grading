@@ -8,6 +8,24 @@ from utils.utilities import Utilities
 
 
 def analyze_source(path, assignment, individual_assignment):
+    """Analyzes a source file. 
+    
+    Checks if the source file compiles, compiles it, finds all functions present in the source file and gathers their signiture.
+    If the file does not compile, a CompilationException is raised.
+
+    Args:
+        path (String): the path of the source file
+        assignment (Assignment): the course assignment being graded.
+        individual_assignment (IndividualAssignment): the student assignment being evaluated and analyzed
+
+    Returns: 
+        (SourceReport): the report about the source containing function information
+
+    Raises:
+        (CompilationException): if the source file does not compile
+    
+    """
+    
     Utilities.log("Compiling... ", True)
     Utilities.flush()
     try:

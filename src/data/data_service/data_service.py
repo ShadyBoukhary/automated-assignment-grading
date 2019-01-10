@@ -15,6 +15,8 @@ from core.individual_assignment import IndividualAssignment
 class DataService:
 
     def load_students(self, assignment):
+        """Retrieves students for an assignment from a file on disk"""
+        
         try:
             contents = Utilities.read_file(assignment.get_students_file_path())
             return [Student(s.split()[0] + " " + s.split()[1], s.split()[2]) for s in contents.splitlines()]
@@ -25,7 +27,8 @@ class DataService:
     
 
     def get_assignments(self):
-    
+        """Retrieves assignments from json file. Converts the dict retrieved to a list of assignments """
+
         try:
             assignment_dicts =  Utilities.json_deserialize(Utilities.get_assignment_data_file_path())
 
