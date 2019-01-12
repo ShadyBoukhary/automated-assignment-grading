@@ -25,7 +25,7 @@ def analyze_source(path, assignment, individual_assignment):
         (CompilationException): if the source file does not compile
     
     """
-    
+
     Utilities.log("Compiling... ", True)
     Utilities.flush()
     try:
@@ -50,6 +50,17 @@ def analyze(source, language):
 
 
 def analyze_cpp(source):
+    """Analyzes a C++ source file
+
+    Finds all function declaration and generates a report based on the functions found.
+    
+    Args:
+        source (String): contents of the source file
+
+    Returns:
+        SourceReport: the report generated using the given source file contents
+    
+     """
     source_report = SourceReport(Constants.CPP_PRIMITIVE_TYPES)
     # get lines starting with a primitive type
     lines_with_types = get_lines_starting_with_types(source)
