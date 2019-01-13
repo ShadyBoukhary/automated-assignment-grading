@@ -20,23 +20,7 @@ def generate_report(assignment):
     Utilities.log("\nGenerating report... ", True)
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
-    grades.append(16)
-    grades.append(46)
 
-    grades.append(36)
-
-    # grades.append(76)
-
-    # grades.append(26)
-
-    # grades.append(19)
-    # grades.append(19)
-
-    # grades.append(19)
-
-    # grades.append(60)
-
-    # grades.append(100)
     grades_counter = Counter(grades)
 
     # Prepare data
