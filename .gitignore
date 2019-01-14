@@ -7,3 +7,4 @@ reports/
 .DS_Store
 *.dat
 logs/
+resources/*/*/compile-temp/

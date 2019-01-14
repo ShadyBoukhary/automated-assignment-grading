@@ -48,7 +48,7 @@ class Utilities:
     @staticmethod
     def json_serialize(filename, obj):
         try:
-            f = open(filename, "w")
+            f = open(filename, "w", encoding="utf-8")
             json.dump(obj, f)
             f.close()
         except IOError as e:
@@ -62,19 +62,17 @@ class Utilities:
         os.system(path)
 
     @staticmethod
-    def compile_source(path, output_dir, output_path, language):
+    def compile_source(path, output_dir, output_path, language, executable_path):
         if not Utilities.path_exists(output_dir):
             Utilities.create_dir(output_dir)
         if language == "cpp":
-            os.system("g++ -o temp " + path + " 2>" + output_path)
-            if Utilities.path_exists("temp"):
-                Utilities.delete_file("temp")
+            os.system("g++ -o " + executable_path + " " + path + " 2>" + output_path)
 
     @staticmethod
     def get_os_file_extension():
         """Gets the executable extension according to the OS """
 
-        if os.system == Constants.WINDOWS_SYSTEM:
+        if sys.platform == Constants.WINDOWS_SYSTEM:
             return ".exe"
         else:
             return ""
@@ -118,7 +116,7 @@ class Utilities:
     @staticmethod
     def log(str, end=False):
         print(str, end="") if end else print(str)
-        Utilities.append_file(Utilities.get_log_path(), str)
+        #Utilities.append_file(Utilities.get_log_path(), str)
         Utilities.flush()
 
     @staticmethod
