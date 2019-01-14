@@ -29,7 +29,7 @@ def analyze_source(path, assignment, individual_assignment):
     Utilities.log("Compiling... ", True)
     Utilities.flush()
     try:
-        result, error = verify_compilation(path, individual_assignment.get_compile_output_dir(), individual_assignment.get_compile_output_path(), "cpp")
+        result, error = verify_compilation(path, individual_assignment.get_compile_output_dir(), individual_assignment.get_compile_output_path(), "cpp", individual_assignment)
         if result:
             source = Utilities.read_file(path)
             # TODO: Keep track of functions in source, maybe loops too?
@@ -98,7 +98,7 @@ def clean_function_line(line):
 def clean_source(source):
     return Utilities.correct_input(source).splitlines()
 
-def verify_compilation(path, compile_output_dir, compile_output_path, language):
+def verify_compilation(path, compile_output_dir, compile_output_path, language, individual_assignment):
     """Checks whether a source code for an assignment compiles
     
     Args:
@@ -112,7 +112,7 @@ def verify_compilation(path, compile_output_dir, compile_output_path, language):
     
     """
 
-    Utilities.compile_source(path, compile_output_dir, compile_output_path, language)
+    Utilities.compile_source(path, compile_output_dir, compile_output_path, language, individual_assignment.get_compile_output_dir() + "main" + Utilities.get_os_file_extension())
     compile_results = Utilities.read_file(compile_output_path)
     Utilities.delete_file(compile_output_path)
 
