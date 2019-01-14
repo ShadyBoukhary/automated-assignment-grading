@@ -41,7 +41,6 @@ AAA also requires:
 * Only C++ is supported
 * Requires executable output to be to the console and not a file
 * Does not support assignments that include command-line arguments
-* Executable files must be compatible with the machine running the system
 * Output with student-made desctiptions forces all strings to be ignored
     * E.g `The number of books is 9` or `number of books: 9` is handled by only comparing numerical values. However, if meaningful strings are also present somewhere else in the key, they will be ignored.
       * Possible solution: enable this feature per line rather than per assignment
@@ -55,8 +54,6 @@ All limitations are planned to be resolved.
 * Input and output file support for execuables will be added
   * This could be difficult to implement
 * Command-line arguments support will be added
-* Cross-platform issues will be resolved by
-  * Not requiring executables but relying soley on compiling the code
-    * This could be a problem when multiple source files exist
+* Multiple-source-file support
 
 
