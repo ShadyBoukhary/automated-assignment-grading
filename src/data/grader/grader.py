@@ -175,7 +175,7 @@ def run_assignment_executable(individual_assignment):
 
     """
 
-    executable_path = individual_assignment.get_local_repo_path() + "/main" + Utilities.get_os_file_extension()
+    executable_path = individual_assignment.get_compile_output_dir() + "/main" + Utilities.get_os_file_extension()
 
     if not Utilities.path_exists(executable_path):
         err_message = "Executable path does not exist: " + executable_path
