@@ -8,8 +8,9 @@ By simply entering information regarding the students and the assignments, AAA i
 AAA requires these to be available in `PATH`:
 * Git
 * g++
+* CMAKE
 
-AAA also requires:
+AAA also requires for MacOS:
 * Sudo permissions (to manipulate files in the `home` directory)
 
 ### Current Supported Languages
@@ -22,19 +23,18 @@ AAA also requires:
 
 ### Current Features
 * Clone/pull student repositories from GitHub
-* Check if source compiles
-* Run executable file provided
+* Compile all files and execute
 * Compare line-by-line with a key
 * Deduct grades based on weights provided with the key
 * Generate Excel Sheet showing grade distribution
-* Analyze source code 
+* Analyze sources
     * Verify existence of required functions and methods
     * Check for poor variable names
     * Keep track of loop count
 * Gives the user the option to choose tolerance amount for floating-point numbers
 * Gives user the option to ignore student-written descriptions that do not contribute to the solution
 * Ignores ASCII table formatting in console apps when needed
-* Uses a spellchecker to give leeway on typos in student solutions
+* Tolerance for string matching based on Levenshtein distance
 
 ### Current Limitations
 * Support is exclusive to GitHub
@@ -54,6 +54,5 @@ All limitations are planned to be resolved.
 * Input and output file support for execuables will be added
   * This could be difficult to implement
 * Command-line arguments support will be added
-* Multiple-source-file support
-
+* Possible D2L API integration as another option  than `Git`
 
