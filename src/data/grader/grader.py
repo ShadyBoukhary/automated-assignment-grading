@@ -222,7 +222,7 @@ def grade_assignmets(students, assignment):
             # clone the current student's assignment 
             data_service.clone_repo(current_student, assignment)
             # check if the source compiles at all
-            source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment) + "main.cpp", assignment, individual_assignment)
+            source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment), assignment, individual_assignment)
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment)
             # get the rubric output file contents

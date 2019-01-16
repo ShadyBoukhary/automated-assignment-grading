@@ -24,9 +24,9 @@ class Utilities:
             raise e
 
     @staticmethod
-    def append_file(filename, str):
+    def write_file(filename, str, mode="a"):
         try:
-            f = open(filename, "a")
+            f = open(filename, mode)
             f.write(str + "\n")
         except IOError as e:
             print("ERROR: " + e.strerror)
@@ -61,12 +61,19 @@ class Utilities:
     def run_program(path):            
         os.system(path)
 
+    # @staticmethod
+    # def compile_source(path, output_dir, output_path, language, executable_path):
+    #     if not Utilities.path_exists(output_dir):
+    #         Utilities.create_dir(output_dir)
+    #     if language == "cpp":
+    #         os.system("g++ -o " + executable_path + " " + path + " 2>" + output_path)
+
     @staticmethod
-    def compile_source(path, output_dir, output_path, language, executable_path):
-        if not Utilities.path_exists(output_dir):
-            Utilities.create_dir(output_dir)
-        if language == "cpp":
-            os.system("g++ -o " + executable_path + " " + path + " 2>" + output_path)
+    def compile_with_cmake(build_dir, build_log_path):
+        print(build_log_path)
+        os.system("cmake -B" + build_dir + " -H" + build_dir)
+        os.system("make -C " + build_dir + " 2>" + build_log_path)
+
 
     @staticmethod
     def get_os_file_extension():
@@ -96,7 +103,12 @@ class Utilities:
 
     @staticmethod
     def get_assignment_data_file_path():
-        return Utilities.get_full_dir_path() + "/../../resources/assignment_list.json"
+        return Utilities.get_resources_dir() + "assignment_list.json"
+
+    @staticmethod
+    def get_resources_dir():
+        return Utilities.get_full_dir_path() + "/../../resources/"
+
 
     @staticmethod
     def get_log_path():
@@ -139,4 +151,6 @@ class Utilities:
     def construct_repo_path(assignment, current_student):
         return assignment.course_name + "/" + current_student.repo
 
-    
+    @staticmethod
+    def get_cmake_template_path():
+        return Utilities.get_resources_dir() + "CMakeLists.txt"

@@ -17,3 +17,11 @@ class Constants:
         "signed char", "char", "unsigned char", "float", "double", "long double", "wchar_t,", "void",
         "string", "std::string"
     ]
+
+
+    # CMAKE
+    CMAKE_PROJECT_NAME = "REPLACE_PROJECT_NAME"
+    CMAKE_EXECUTABLE_NAME = "REPLACE_EXECUTABLE_NAME"
+    CMAKE_INCLUDE_DIRS = "REPLACE_INCLUDE_DIRS"
+    CMAKE_SOURCE_GLOB = "REPLACE_SOURCE_GLOB"
+    CMAKE_OUTPUT_DIR = "REPLACE_OUTPUT_DIRECTORY"
