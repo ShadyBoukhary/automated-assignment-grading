@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import re
+import Levenshtein as lev
 
 from git.exc import GitCommandError
 from autocorrect import spell
@@ -160,8 +161,7 @@ def equal_lines(rubric_line, student_line, assignment):
         return True
 
 def words_hash_is_equal(rubric, student):
-    # TODO: Find a better way? or at least compare with a multitude of possibilites not just the most likely one
-    return spell(rubric) == spell(student)
+    return spell(rubric) == spell(student) or lev.distance(rubric, student)< Constants.LEVENSHTEIN_DISTANCE
 
 def run_assignment_executable(individual_assignment):
     """Runs executable file of an assignment and dumps the output to a file
