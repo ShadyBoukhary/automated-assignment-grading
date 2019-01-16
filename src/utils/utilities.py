@@ -96,7 +96,7 @@ class Utilities:
 
     @staticmethod
     def get_assignment_data_file_path():
-        return Utilities.get_full_dir_path() + "/../../resources/assignment_list.dat"
+        return Utilities.get_full_dir_path() + "/../../resources/assignment_list.json"
 
     @staticmethod
     def get_log_path():
@@ -134,3 +134,9 @@ class Utilities:
     @staticmethod
     def simple_string_hash(word):
         return sum(bytearray(word, "utf-8"))
+
+    @staticmethod
+    def construct_repo_path(assignment, current_student):
+        return assignment.course_name + "/" + current_student.repo
+
+    

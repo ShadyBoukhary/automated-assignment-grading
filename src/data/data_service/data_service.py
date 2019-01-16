@@ -19,7 +19,7 @@ class DataService:
         
         try:
             contents = Utilities.read_file(assignment.get_students_file_path())
-            return [Student(s.split()[0] + " " + s.split()[1], s.split()[2]) for s in contents.splitlines()]
+            return [Student(s.split()[0] + " " + s.split()[1], s.split()[2], assignment.course_name + "-" + s.split()[2]) for s in contents.splitlines()]
         except:
             print(Constants.CROSS_MARK)
             sys.exit("Could not read students file. Please make sure the following file exists: "+ assignment.get_students_file_path())
@@ -35,8 +35,8 @@ class DataService:
             if assignment_dicts[0] == {}:
                 return []
             # convert list of dict containing an assignment into list of Assignment objects
-            return [Assignment(a_dict["repo_name"], a_dict["course_name"], 
-            [IndividualAssignment(i_dict["repo_name"],
+            return [Assignment(a_dict["name"], a_dict["course_name"], 
+            [IndividualAssignment(i_dict["name"],
             Student(i_dict["student"]["name"], i_dict["student"]["username"]),
             i_dict["course_name"]) 
             for i_dict in a_dict["individual_assignments"]]) 
@@ -73,15 +73,15 @@ class DataService:
         
         """
 
-        #username = Constants.USERS_USERNAMES_MAP[name]
-        repo = "/" + assignment.repo_name
-        path_to_clone_to = Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + assignment.course_name + repo + "/" + current_student.username
-        path_to_clone_from = Constants.BASE_URL + current_student.username  + repo + ".git"
+        #path_to_clone_to = Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + assignment.course_name + repo + "/" + current_student.username
+        path_to_clone_to = Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + Utilities.construct_repo_path(assignment, current_student)
+
+        path_to_clone_from = Constants.BASE_URL + current_student.username  + "/" + current_student.repo + ".git"
 
         try:
 
             if Utilities.path_exists(path_to_clone_to):
-                Utilities.log("Path Exists for username: " + current_student.username  + ", Repo: " + assignment.repo_name + ", Pulling instead... ", True)
+                Utilities.log("Path Exists for username: " + current_student.username  + ", Repo: " + assignment.name + ", Pulling instead... ", True)
                 Utilities.flush()
                 local_repo = Repo(path_to_clone_to)
                 local_repo.remotes.origin.pull()

@@ -1,7 +1,7 @@
 from data.grader import grader
 
 def display_menu():
-    print("Enter the the number of the command.\nCTRL-C to exit.\n")
+    print("Enter the the number of the command.\nCTRL-C or 3 to exit.\n")
     print("1. " + "Grade an Assignments.")
     print("2. " + "Enter a new assignment.")
 

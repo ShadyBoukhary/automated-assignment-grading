@@ -3,8 +3,8 @@ from utils.constants import Constants
 
 class IndividualAssignment:
 
-    def __init__(self, repo_name, student, course_name):
-        self.repo_name = repo_name
+    def __init__(self, name, student, course_name):
+        self.name = name
         self.student = student
         self.course_name = course_name
         self.grade = 100
@@ -13,13 +13,14 @@ class IndividualAssignment:
 
         
     def get_local_repo_path(self):
-        return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + self.course_name + "/" + self.repo_name + "/" + self.student.username
+        #return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + self.course_name + "/" + self.repo_name + "/" + self.student.username
+        return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + Utilities.construct_repo_path(self, self.student)
 
     def get_output_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.repo_name + "/" + self.repo_name +  "_" + self.student.username + ".txt"
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/" + self.name +  "_" + self.student.username + ".txt"
     
     def get_compile_output_dir(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.repo_name + "/" + "compile-temp/"
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/" + "compile-temp/"
     
     def get_compile_output_path(self):
-        return self.get_compile_output_dir() + self.repo_name +  "_" + self.student.username + ".txt"
+        return self.get_compile_output_dir() + self.name +  "_" + self.student.username + ".txt"

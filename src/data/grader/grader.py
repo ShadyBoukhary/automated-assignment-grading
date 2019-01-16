@@ -51,7 +51,7 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
 
     """
 
-    Utilities.log("1st PASS... ", True)
+    Utilities.log("Initial equality check... ", True)
     Utilities.flush()
     if rubric_file_contents == assignment_file_contents:
         Utilities.log(Constants.CHECK_MARK)
@@ -167,8 +167,7 @@ def run_assignment_executable(individual_assignment):
     """Runs executable file of an assignment and dumps the output to a file
     
     Args:
-        local_repo_path (str): The path of the cloned repo on disk.
-        repo_name (str): The name of the repo as cloned from Github.
+        individual_assignment (IndividualAssignment): student assignment to execute
 
     Returns:
         str: The relative path to the output file generated when executing the assignment
@@ -216,14 +215,14 @@ def grade_assignmets(students, assignment):
 
         # Create and add individual assignment to list 
         print_student_header(current_student)
-        individual_assignment = IndividualAssignment(assignment.repo_name, current_student, assignment.course_name)
+        individual_assignment = IndividualAssignment(assignment.name, current_student, assignment.course_name)
         assignment.individual_assignments.append(individual_assignment)
 
         try:
             # clone the current student's assignment 
             data_service.clone_repo(current_student, assignment)
             # check if the source compiles at all
-            source_report = source_analyzer.analyze_source(individual_assignment.get_local_repo_path() + "/main.cpp", assignment, individual_assignment)
+            source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment) + "main.cpp", assignment, individual_assignment)
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment)
             # get the rubric output file contents
@@ -296,12 +295,12 @@ def enter_new_assignment():
     """
     Utilities.log("--------------------------")
     course_name = input("Course name (e.g: CMPS-3410): ")
-    repo_name = input("Repository name (this will be used when cloning from GitHub): ")
+    name = input("The name of the assignment (should be a folder in student repositories): ")
     confirm = "N"
     while not confirm.upper() == "Y" or confirm.upper == "N":
         confirm = input("Save assignment? (Y/n) ")
         if confirm.upper() == "Y":
-            assignment = Assignment(repo_name, course_name, [])
+            assignment = Assignment(name, course_name, [])
             assignments = get_assignments(True)
             assignments.append(assignment)
             save_assignments(assignments)
@@ -324,11 +323,11 @@ def get_assignment_to_grade():
     try_again = True
     Utilities.log("\n--------------- Assignment Repo Names ---------------")
     for assignment in assignments:
-        Utilities.log(assignment.repo_name + "\n")
+        Utilities.log(assignment.name + "\n")
     Utilities.log("\nEnter the name of the repo to start grading assignments")
     while try_again:
-        repo_name = input()
-        found = [assignment if assignment.repo_name == repo_name else None for assignment in assignments]
+        name = input()
+        found = [assignment if assignment.name == name else None for assignment in assignments]
         if found == [] or found[0] == None:
             Utilities.log("Try again.")
         else:

@@ -37,7 +37,7 @@ def generate_report(assignment):
     data_frame = data_frame.reindex(columns=sorted(data_frame.columns))
     
     # Createe Pandas Excel writer with XlsxWriter engine
-    excel_file = assignment.get_reports_dir_path() +  assignment.course_name + "_" + assignment.repo_name + "_assignment_report.xlsx"
+    excel_file = assignment.get_reports_dir_path() +  assignment.course_name + "_" + assignment.name + "_assignment_report.xlsx"
     sheet_name = "Report"
 
     writer = pd.ExcelWriter(excel_file, engine="xlsxwriter")
