@@ -112,10 +112,33 @@ def verify_compilation(path, compile_output_dir, compile_output_path, language, 
     
     """
 
-    Utilities.compile_source(path, compile_output_dir, compile_output_path, language, individual_assignment.get_compile_output_dir() + "main" + Utilities.get_os_file_extension())
+    executable_name = "main" + Utilities.get_os_file_extension()
+    
+    init_cmake(path, path, individual_assignment.name, executable_name, compile_output_dir)
+
+    Utilities.compile_with_cmake(compile_output_dir, compile_output_path)
     compile_results = Utilities.read_file(compile_output_path)
-    Utilities.delete_file(compile_output_path)
+
+    #Utilities.delete_file(compile_output_path)
 
     if len(compile_results) < 1:
         return True, None
     return False, compile_results
+
+def init_cmake(source_dir, include_dir, assignment_name, executable_name, output_dir):
+    cmake_contents = Utilities.read_file(Utilities.get_cmake_template_path())
+
+    # replace placeholder cmake variables and directories
+    cmake_contents = cmake_contents.replace(Constants.CMAKE_SOURCE_GLOB, "\"" + source_dir + "*.cpp\"")
+    cmake_contents = cmake_contents.replace(Constants.CMAKE_INCLUDE_DIRS, include_dir)
+    cmake_contents = cmake_contents.replace(Constants.CMAKE_PROJECT_NAME, assignment_name)
+    cmake_contents = cmake_contents.replace(Constants.CMAKE_EXECUTABLE_NAME, executable_name)
+    cmake_contents = cmake_contents.replace(Constants.CMAKE_OUTPUT_DIR, "\"" + output_dir + "\"")
+
+    new_cmake_path = output_dir + "CMakeLists.txt"
+
+    if not Utilities.path_exists(output_dir):
+        Utilities.create_dir(output_dir)
+    Utilities.write_file(new_cmake_path, cmake_contents, "w")
+
+        
