@@ -16,6 +16,7 @@ def get_menu_option():
             print("Must be an integer.")
     
 def main():
+
     display_menu()
     option = get_menu_option()
     while option < 3:

@@ -3,19 +3,17 @@ import os
 import sys
 import re
 import Levenshtein as lev
-
 from git.exc import GitCommandError
 from autocorrect import spell
 import data.grader.source_analyzer as source_analyzer
 import data.report.report_generator as report_generator
+from custom.compilation_exception import CompilationException
 from core.assignment import Assignment
 from core.individual_assignment import IndividualAssignment
 from core.student import Student
-from custom.compilation_exception import CompilationException
 from data.data_service.data_service import DataService
 from utils.constants import Constants
 from utils.utilities import Utilities
-
 
 def load_students(assignment):
     """Loads all students from disk for an assignment
