@@ -139,7 +139,7 @@ def verify_compilation(path, compile_output_dir, compile_output_path, language, 
     Utilities.compile_with_cmake(compile_output_dir, compile_output_path)
     compile_results = Utilities.read_file(compile_output_path)
 
-    #Utilities.delete_file(compile_output_path)
+    Utilities.delete_file(compile_output_path)
 
     if len(compile_results) < 1:
         return True, None

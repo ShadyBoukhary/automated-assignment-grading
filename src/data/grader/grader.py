@@ -14,6 +14,9 @@ from core.student import Student
 from data.data_service.data_service import DataService
 from utils.constants import Constants
 from utils.utilities import Utilities
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+
 
 def load_students(assignment):
     """Loads all students from disk for an assignment
@@ -137,9 +140,12 @@ def equal_lines(rubric_line, student_line, assignment):
         rubric_line = ' '.join([word for word in rubric_line.split() if Utilities.is_number(word)])
         student_line = ' '.join([word for word in student_line.split() if Utilities.is_number(word)])
 
+        # split result by spaces
+        rubric_split = rubric_line.split()
+        student_split = student_line.split()
         # loop over remaining numbers after splitting
         for i in range(len(rubric_split)):
-            if (Utilities.is_number(rubric_split[i])):
+            if (Utilities.is_number(rubric_split[i]) and Utilities.is_number(student_split[i])):
                 if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
                     return False
             else:
@@ -150,7 +156,7 @@ def equal_lines(rubric_line, student_line, assignment):
     else:
         for i in range(len(rubric_split)):
 
-            if not Utilities.is_number(rubric_split[i]):
+            if not (Utilities.is_number(rubric_split[i]) and Utilities.is_number(student_split[i])):
                 if not words_hash_is_equal(rubric_split[i], student_split[i]):
                     return False
             else:
@@ -161,7 +167,7 @@ def equal_lines(rubric_line, student_line, assignment):
 def words_hash_is_equal(rubric, student):
     return spell(rubric) == spell(student) or lev.distance(rubric, student)< Constants.LEVENSHTEIN_DISTANCE
 
-def run_assignment_executable(individual_assignment):
+def run_assignment_executable(individual_assignment, assignment):
     """Runs executable file of an assignment and dumps the output to a file
     
     Args:
@@ -172,16 +178,19 @@ def run_assignment_executable(individual_assignment):
 
     """
 
-    executable_path = individual_assignment.get_compile_output_dir() + "/main" + Utilities.get_os_file_extension()
-
+    executable_path = individual_assignment.get_compile_output_dir() + "main" + Utilities.get_os_file_extension()
+    additional_args = ""
     if not Utilities.path_exists(executable_path):
         err_message = "Executable path does not exist: " + executable_path
         e = IOError(err_message)
         e.strerror = err_message
         raise e
+    print(assignment.input_file)
+    if not assignment.input_file == "":
+        additional_args = " <" + assignment.get_input_file_path()
 
     relative_output_path = individual_assignment.get_output_path()
-    shell_command = executable_path + Constants.OUT_TO_FILE + relative_output_path
+    shell_command = executable_path + additional_args + Constants.OUT_TO_FILE + relative_output_path
     Utilities.run_program(shell_command)
 
     return relative_output_path
@@ -222,7 +231,7 @@ def grade_assignmets(students, assignment):
             # check if the source compiles at all
             source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment), assignment, individual_assignment)
             # get output file path after running the student's program
-            relative_output_path = run_assignment_executable(individual_assignment)
+            relative_output_path = run_assignment_executable(individual_assignment, assignment)
             # get the rubric output file contents
             rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
             # get the student output file contents
@@ -294,11 +303,21 @@ def enter_new_assignment():
     Utilities.log("--------------------------")
     course_name = input("Course name (e.g: CMPS-3410): ")
     name = input("The name of the assignment (should be a folder in student repositories): ")
+    strings_matter = input("Should string values be a part of the grading procedure (y/N): ")
+    strings_matter = True if strings_matter.upper() == "Y" else False
+    table_formatting = input("Does this assignment contain ASCII Tables? (y/N): ")
+    table_formatting = True if table_formatting.upper() == "Y" else False
+    input_file_used = input("Do you want to add an input file? (y/N): ")
+    file_path = ""
+    if input_file_used.upper() == "Y":
+        Tk().withdraw()
+        file_path = askopenfilename()
+        print(file_path)
     confirm = "N"
     while not confirm.upper() == "Y" or confirm.upper == "N":
         confirm = input("Save assignment? (Y/n) ")
         if confirm.upper() == "Y":
-            assignment = Assignment(name, course_name, [])
+            assignment = Assignment(name, course_name, [], strings_matter=strings_matter, table_formatting=table_formatting,input_file=file_path)
             assignments = get_assignments(True)
             assignments.append(assignment)
             save_assignments(assignments)

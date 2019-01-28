@@ -37,11 +37,11 @@ class DataService:
             # convert list of dict containing an assignment into list of Assignment objects
             return [Assignment(a_dict["name"], a_dict["course_name"], 
             [IndividualAssignment(i_dict["name"],
-            Student(i_dict["student"]["name"], i_dict["student"]["username"]),
+            Student(i_dict["student"]["name"], i_dict["student"]["username"], i_dict["student"]["repo"]),
             i_dict["course_name"]) 
-            for i_dict in a_dict["individual_assignments"]]) 
+            for i_dict in a_dict["individual_assignments"]], a_dict["tolerance"], a_dict["table_formatting"],
+                         a_dict["strings_matter"], a_dict["input_file"]) 
             for a_dict in assignment_dicts]
-
         except json.JSONDecodeError:
             print("No assignments found or file is corrupted.")
             return []
