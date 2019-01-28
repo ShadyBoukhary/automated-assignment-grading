@@ -70,9 +70,9 @@ class Utilities:
 
     @staticmethod
     def compile_with_cmake(build_dir, build_log_path):
-        print(build_log_path)
-        os.system("cmake -B" + build_dir + " -H" + build_dir)
-        os.system("make -C " + build_dir + " 2>" + build_log_path)
+        os.system("cmake -B" + build_dir + " -H" + build_dir + " >temp")
+        os.system("make -C " + build_dir + " >temp 2>" + build_log_path)
+        Utilities.delete_file("temp")
 
 
     @staticmethod

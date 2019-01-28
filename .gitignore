@@ -8,3 +8,4 @@ reports/
 *.dat
 logs/
 resources/*/*/compile-temp/
+.env
