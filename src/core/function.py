@@ -1,5 +1,4 @@
 class Function:
-
     def __init__(self, name, return_type, arguments):
         self.name = name
         self.return_type = return_type
