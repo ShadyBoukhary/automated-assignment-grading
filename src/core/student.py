@@ -1,6 +1,5 @@
 from utils.utilities import Utilities
 class Student:
-
     def __init__(self, name, username, repo):
         self.name = name
         self.username = username
