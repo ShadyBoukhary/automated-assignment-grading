@@ -35,13 +35,8 @@ class DataService:
             if assignment_dicts[0] == {}:
                 return []
             # convert list of dict containing an assignment into list of Assignment objects
-            return [Assignment(a_dict["name"], a_dict["course_name"], 
-            [IndividualAssignment(i_dict["name"],
-            Student(i_dict["student"]["name"], i_dict["student"]["username"], i_dict["student"]["repo"]),
-            i_dict["course_name"]) 
-            for i_dict in a_dict["individual_assignments"]], a_dict["tolerance"], a_dict["table_formatting"],
-                         a_dict["strings_matter"], a_dict["input_file"]) 
-            for a_dict in assignment_dicts]
+            return [Assignment.from_json(a_dict) for a_dict in assignment_dicts]
+
         except json.JSONDecodeError:
             print("No assignments found or file is corrupted.")
             return []
@@ -60,7 +55,7 @@ class DataService:
         """
 
         try:
-            Utilities.json_serialize(Utilities.get_assignment_data_file_path(), [assignment.__dict__ for assignment in assignments])
+            Utilities.json_serialize(Utilities.get_assignment_data_file_path(), assignments)
         except json.JSONDecodeError as e:
             raise e
 

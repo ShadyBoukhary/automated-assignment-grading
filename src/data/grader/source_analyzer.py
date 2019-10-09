@@ -132,6 +132,10 @@ def verify_compilation(path, compile_output_dir, compile_output_path, language, 
     
     """
 
+    if not Utilities.path_exists(path):
+        message = "Assignment folder does not exist, aborting compilation."
+        Utilities.log(message)
+        return False, message
     executable_name = "main" + Utilities.get_os_file_extension()
     
     init_cmake(path, path, individual_assignment.name, executable_name, compile_output_dir)

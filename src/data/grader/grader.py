@@ -223,7 +223,8 @@ def grade_assignmets(students, assignment):
         # Create and add individual assignment to list 
         print_student_header(current_student)
         individual_assignment = IndividualAssignment(assignment.name, current_student, assignment.course_name)
-        assignment.individual_assignments.append(individual_assignment)
+        # reset skipped assignments
+        assignment.skipped_assignments = []
 
         try:
             # clone the current student's assignment 
@@ -240,16 +241,17 @@ def grade_assignmets(students, assignment):
             individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
             # copy source report to individual assignment
             individual_assignment.source_report = source_report
+            assignment.individual_assignments.append(individual_assignment)
 
         except IOError as e:
             # Keep track of skipped assignments due to errors
             Utilities.log(e.strerror)
-            assignment.skipped_assignments.append((individual_assignment, e.strerror))
+            assignment.skipped_assignments.append(individual_assignment)
 
         # Handle other errors
         except GitCommandError as e:
             Utilities.log("Git Error - skipping student:" + e.stderr)
-            assignment.skipped_assignments.append((individual_assignment, e))
+            assignment.skipped_assignments.append(individual_assignment)
 
         except CompilationException as e:
             Utilities.log(e.message)
@@ -290,7 +292,7 @@ def save_assignments(assignments):
         data_service.save_assignments(assignments)
         Utilities.log("Assignment saved!")
     except Exception as e:
-        Utilities.log("ERROR: " + e)
+        Utilities.log("ERROR: " + str(e))
         Utilities.log("Failed to save data... Try again.")
 
 def enter_new_assignment():
@@ -303,6 +305,10 @@ def enter_new_assignment():
     Utilities.log("--------------------------")
     course_name = input("Course name (e.g: CMPS-3410): ")
     name = input("The name of the assignment (should be a folder in student repositories): ")
+    # Check if course already has student list
+
+
+
     strings_matter = input("Should string values be a part of the grading procedure (y/N): ")
     strings_matter = True if strings_matter.upper() == "Y" else False
     table_formatting = input("Does this assignment contain ASCII Tables? (y/N): ")
@@ -314,11 +320,36 @@ def enter_new_assignment():
         file_path = askopenfilename()
         print(file_path)
     confirm = "N"
+    assignment = Assignment(name, course_name, [], strings_matter=strings_matter, table_formatting=table_formatting,input_file=file_path)
+    
+    # Add rubric
+    print("Please select the rubric file.")
+    Tk().withdraw()
+    file_path = askopenfilename()
+    contents = Utilities.read_file(file_path)
+    Utilities.create_file_dir_if_not_exists(assignment.get_rubric_file_path())
+    Utilities.write_file(assignment.get_rubric_file_path(), contents, "w+")
+
+    # Add weights
+    Tk().withdraw()
+    file_path = askopenfilename()
+    contents = Utilities.read_file(file_path)
+    Utilities.create_file_dir_if_not_exists(assignment.get_weights_file_path())
+    Utilities.write_file(assignment.get_weights_file_path(), contents, "w+")
     while not confirm.upper() == "Y" or confirm.upper == "N":
         confirm = input("Save assignment? (Y/n) ")
         if confirm.upper() == "Y":
-            assignment = Assignment(name, course_name, [], strings_matter=strings_matter, table_formatting=table_formatting,input_file=file_path)
             assignments = get_assignments(True)
+            matches = [x for x in assignments if x.course_name == course_name]
+
+            # Add students
+            if len(matches) == 0:
+                print("This course does not have any students, please provide a file with student info in this format: Name LastName GitHubUserName.\n")
+                Tk().withdraw()
+                file_path = askopenfilename()
+                contents = Utilities.read_file(file_path)
+                Utilities.create_file_dir_if_not_exists(assignment.get_students_file_path())
+                Utilities.write_file(assignment.get_students_file_path(), contents, "w+")
             assignments.append(assignment)
             save_assignments(assignments)
             return assignment
@@ -340,16 +371,23 @@ def get_assignment_to_grade():
     try_again = True
     Utilities.log("\n--------------- Assignment Repo Names ---------------")
     for assignment in assignments:
-        Utilities.log(assignment.name + "\n")
+        Utilities.log(assignment.name)
     Utilities.log("\nEnter the name of the repo to start grading assignments")
     while try_again:
         name = input()
-        found = [assignment if assignment.name == name else None for assignment in assignments]
+        found = [assignment for assignment in assignments if assignment.name == name]
         if found == [] or found[0] == None:
             Utilities.log("Try again.")
         else:
             try_again = False
             return found[0]
+
+def update_assignment(assignment):
+    assignments = get_assignments(False)
+    for i, a in enumerate(assignments):
+        if a.name == assignment.name:
+            assignments[i] = assignment
+    save_assignments(assignments)
 
 def grade():
     """Grades an assignment for all students and generates a report """
@@ -357,4 +395,5 @@ def grade():
     assignment = get_assignment_to_grade()
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
-    report_generator.generate_report(assignment)
+    update_assignment(assignment)
+    #report_generator.generate_report(assignment)

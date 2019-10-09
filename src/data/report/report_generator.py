@@ -20,7 +20,8 @@ def generate_report(assignment):
     Utilities.log("\nGenerating report... ", True)
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
-
+    if len(grades) < 1:
+        return
     grades_counter = Counter(grades)
 
     # Prepare data

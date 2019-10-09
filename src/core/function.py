@@ -4,6 +4,13 @@ class Function:
         self.return_type = return_type
         self.arguments = arguments
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
+    def to_dict(self):
+        return self.__dict__
+        
     def __eq__(self, other):
         if isinstance(other, Function):
             return self.name == other.name and self.return_type == other.return_type and self.arguments == other.arguments

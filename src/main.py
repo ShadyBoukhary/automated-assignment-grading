@@ -1,12 +1,14 @@
 from data.grader import grader
 
+
 def display_menu():
     print("Enter the the number of the command.\nCTRL-C or 3 to exit.\n")
     print("1. " + "Grade an Assignments.")
     print("2. " + "Enter a new assignment.")
 
+
 def get_menu_option():
-    valid = False 
+    valid = False
     while not valid:
         try:
             val = int(input())
@@ -14,7 +16,8 @@ def get_menu_option():
             return val
         except ValueError:
             print("Must be an integer.")
-    
+
+
 def main():
     display_menu()
     option = get_menu_option()
@@ -23,5 +26,6 @@ def main():
         print("\n")
         display_menu()
         option = get_menu_option()
+
 
 main()

@@ -2,7 +2,7 @@ import os
 import sys
 import json
 from utils.constants import Constants
-
+import errno
 class Utilities:
     """Static class containing utility methods"""
 
@@ -46,10 +46,14 @@ class Utilities:
             raise e
 
     @staticmethod
+    def obj_dict(obj):
+        return obj.__dict__
+        
+    @staticmethod
     def json_serialize(filename, obj):
         try:
             f = open(filename, "w", encoding="utf-8")
-            json.dump(obj, f)
+            json.dump([ob.to_dict() for ob in obj], f)
             f.close()
         except IOError as e:
             print("FILE ERROR: " + e.strerror)
@@ -74,6 +78,14 @@ class Utilities:
         os.system("make -C " + build_dir + " >temp 2>" + build_log_path)
         Utilities.delete_file("temp")
 
+    @staticmethod
+    def create_file_dir_if_not_exists(filename):
+        if not os.path.exists(os.path.dirname(filename)):
+            try:
+                os.makedirs(os.path.dirname(filename))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
 
     @staticmethod
     def get_os_file_extension():

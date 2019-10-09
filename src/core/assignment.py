@@ -1,20 +1,35 @@
 from utils.utilities import Utilities
-
+from core.individual_assignment import IndividualAssignment
 class Assignment(dict):
 
-    def __init__(self, name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True, input_file=""):
+    def __init__(self, name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True, input_file="", skipped_assignments=[]):
         self.name = name
         self.course_name = course_name
         self.individual_assignments = individual_assignments
-        self.skipped_assignments = []
+        self.skipped_assignments = skipped_assignments
         self.tolerance = tolerance # 0, 1, 2, or 3
         self.table_formatting = table_formatting
         self.strings_matter = strings_matter
         self.input_file = input_file
         if not input_file == "":
             contents = Utilities.read_file(input_file)
-            Utilities.write_file(self.get_input_file_path(), contents, "w")
+            Utilities.create_file_dir_if_not_exists(self.get_input_file_path())
+            Utilities.write_file(self.get_input_file_path(), contents, "w+")
             self.input_file = self.get_input_file_path()
+
+    @classmethod
+    def from_json(cls, data):
+        assignment = Assignment(**data)
+        assignment.skipped_assignments = list(map(IndividualAssignment.from_json, data["skipped_assignments"]))
+        assignment.individual_assignments = list(map(IndividualAssignment.from_json, data["individual_assignments"]))
+
+        return assignment
+        
+    def to_dict(self):
+        dic = self.__dict__
+        dic["individual_assignments"] = [i.to_dict() for i in self.individual_assignments]
+        dic["skipped_assignments"] = [i.to_dict() for i in self.skipped_assignments]
+        return dic
 
     def get_assignment_folder_path(self):
         return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/"
