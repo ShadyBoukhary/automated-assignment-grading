@@ -1,5 +1,6 @@
 from utils.utilities import Utilities
 from core.individual_assignment import IndividualAssignment
+import copy
 class Assignment(dict):
 
     def __init__(self, name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True, input_file="", skipped_assignments=[]):
@@ -26,7 +27,7 @@ class Assignment(dict):
         return assignment
         
     def to_dict(self):
-        dic = self.__dict__
+        dic = copy.deepcopy(self.__dict__)
         dic["individual_assignments"] = [i.to_dict() for i in self.individual_assignments]
         dic["skipped_assignments"] = [i.to_dict() for i in self.skipped_assignments]
         return dic

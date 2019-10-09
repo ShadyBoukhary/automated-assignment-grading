@@ -216,15 +216,16 @@ def grade_assignmets(students, assignment):
 
     Utilities.log("Grading assignments...")
     data_service = DataService()
-
+    assignment.skipped_assignments = []
+    assignment.individual_assignments = []
     # Loop through individual assignments
     for current_student in students:
 
-        # Create and add individual assignment to list 
+        # Create and add individual assignmenti to list 
         print_student_header(current_student)
         individual_assignment = IndividualAssignment(assignment.name, current_student, assignment.course_name)
         # reset skipped assignments
-        assignment.skipped_assignments = []
+
 
         try:
             # clone the current student's assignment 
@@ -396,4 +397,4 @@ def grade():
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
     update_assignment(assignment)
-    #report_generator.generate_report(assignment)
+    report_generator.generate_report(assignment)

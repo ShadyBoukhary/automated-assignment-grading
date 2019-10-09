@@ -2,7 +2,7 @@ from utils.utilities import Utilities
 from utils.constants import Constants
 from core.student import Student
 from core.source_report import SourceReport
-
+import copy
 class IndividualAssignment(dict):
 
     def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=None):
@@ -10,18 +10,19 @@ class IndividualAssignment(dict):
         self.student = student
         self.course_name = course_name
         self.grade = grade
-        self.wrong_lines = wrong_lines
+        self.wrong_lines = []
         self.source_report = source_report
 
     @classmethod
     def from_json(cls, data):
         ia = cls(**data)
         ia.student = Student.from_json(data["student"])
-        ia.source_report = SourceReport.from_json(data["source_report"])
+        if not data["source_report"] == {}:
+            ia.source_report = SourceReport.from_json(data["source_report"])
         return ia
         
     def to_dict(self):
-        dic = self.__dict__
+        dic = copy.deepcopy(self.__dict__)
         dic["student"] = self.student.to_dict()
         if self.source_report is None:
             dic["source_report"] = {}
@@ -29,6 +30,10 @@ class IndividualAssignment(dict):
             dic["source_report"] = self.source_report.to_dict()
 
         return dic
+
+    def reset(self):
+        self.source_report = None
+        self.wrong_lines = []
 
     def get_local_repo_path(self):
         #return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY + "/" + self.course_name + "/" + self.repo_name + "/" + self.student.username
