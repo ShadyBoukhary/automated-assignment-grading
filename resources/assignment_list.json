@@ -1,12 +1,1 @@
-[
-    {
-        "name": "test-cpp",
-        "course_name": "CMPS-3410",
-        "individual_assignments": [],
-        "skipped_assignments": [],
-        "tolerance": 0,
-        "table_formatting": false,
-        "strings_matter": false,
-        "input_file": "/Users/shadyboukhary/automated-assignment-grading/src/utils/../../resources/CMPS-3410/test-cpp/test-cpp_interactive_input.txt"
-    }
-]
+[{"name": "prog2", "course_name": "CMPS-1044", "individual_assignments": [], "skipped_assignments": [], "tolerance": 0, "table_formatting": false, "strings_matter": false, "input_file": "/Users/shady/automated-assignment-grading/src/utils/../../resources/CMPS-1044/prog2/prog2_interactive_input.txt"}]

@@ -133,6 +133,7 @@ def equal_lines(rubric_line, student_line, assignment):
     # split result by spaces
     rubric_split = rubric_line.split()
     student_split = student_line.split()
+    
 
     # if strings don't matter, extract and compare the numbers using the above tolerance
     if not assignment.strings_matter:
@@ -144,6 +145,11 @@ def equal_lines(rubric_line, student_line, assignment):
         rubric_split = rubric_line.split()
         student_split = student_line.split()
         # loop over remaining numbers after splitting
+        print("-------------------")
+        print("Rubric length: " + str(len(rubric_split)))
+        print(rubric_line)
+        print("Student length: " + str(len(student_split)))
+        print(student_line)
         for i in range(len(rubric_split)):
             if (Utilities.is_number(rubric_split[i]) and Utilities.is_number(student_split[i])):
                 if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
@@ -224,8 +230,6 @@ def grade_assignmets(students, assignment):
         # Create and add individual assignmenti to list 
         print_student_header(current_student)
         individual_assignment = IndividualAssignment(assignment.name, current_student, assignment.course_name)
-        # reset skipped assignments
-
 
         try:
             # clone the current student's assignment 

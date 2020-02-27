@@ -1,0 +1,17 @@
+Paige Champagne
+CS 1044, Section 101, Spring 19, Dr.Johnson
+February 8, 2019
+This program will calculate the total price of tickets to
+the Harlem Globetrotters, including tax, given the amount
+of tickets the user wishes to purchase.
+
+Enter amount of tickets for price 1: 
+Enter amount of tickets for price 2: 
+Enter amount of tickets for price 3: 
+Enter amount of tickets for price 4: 
+Enter amount of tickets for price 5: 
+Enter amount of tickets for price 6: 
+
+Subtotal = $9350.00
+Tax Amount = $771.38
+Total = $10121.38
