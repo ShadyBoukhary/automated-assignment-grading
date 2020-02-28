@@ -146,6 +146,7 @@ class Utilities:
     @staticmethod
     def is_number(s):
         try:
+            print(f"Is {s} a float?")
             float(s)
             return True
         except ValueError:

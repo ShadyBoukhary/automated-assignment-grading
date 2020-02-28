@@ -18,9 +18,20 @@ class DataService:
         """Retrieves students for an assignment from a file on disk"""
         
         try:
-            contents = Utilities.read_file(assignment.get_students_file_path())
-            return [Student(s.split()[0] + " " + s.split()[1], s.split()[2], assignment.course_name + "-" + s.split()[2]) for s in contents.splitlines()]
-        except:
+            student_dicts = Utilities.json_deserialize(assignment.get_students_file_path())
+            print(student_dicts)
+            students = []
+
+            for s_dict in student_dicts:
+                firstName = s_dict['firstName']
+                lastName = s_dict['lastName']
+                username = s_dict['username']
+                repo = f"{assignment.course_name}-{username}"
+                students.append(Student(firstName, lastName, username, repo))
+            #return [Student.from_json(s_dict) for s_dict in student_dicts]
+            return students
+        except Exception as e:
+            print(e)
             print(Constants.CROSS_MARK)
             sys.exit("Could not read students file. Please make sure the following file exists: "+ assignment.get_students_file_path())
 

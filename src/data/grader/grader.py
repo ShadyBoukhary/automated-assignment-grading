@@ -16,6 +16,7 @@ from utils.constants import Constants
 from utils.utilities import Utilities
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
+import re
 
 
 def load_students(assignment):
@@ -26,7 +27,7 @@ def load_students(assignment):
 
     Returns:
         ([Student]): list of students for that assignment
-        
+
     """
 
     Utilities.log("Retrieving student data... ", True)
@@ -35,7 +36,14 @@ def load_students(assignment):
     Utilities.log(Constants.CHECK_MARK)
     return students
 
-def grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment):
+
+def deduct_grade(individual_assignment, deduction):
+    try:
+        individual_assignment.grade = individual_assignment.grade - float(deduction)
+    except IndexError:
+        sys.exit("The Weights file is misconfigured. They have to be numbers. Cannot grade until fixed.")
+
+def grade_assignment(rubric_file_dicts, assignment_file_contents, individual_assignment, assignment):
     """Grades an assignment
 
     Grades an assignment based on a comparison between the rubric output and the student
@@ -53,69 +61,6 @@ def grade_assignment(rubric_file_contents, assignment_file_contents, individual_
 
     """
 
-    Utilities.log("Initial equality check... ", True)
-    Utilities.flush()
-    if rubric_file_contents == assignment_file_contents:
-        Utilities.log(Constants.CHECK_MARK)
-    else:
-        Utilities.log(Constants.CROSS_MARK + "\n" + "attempting line-by-line evaluation...")
-        split_rubric = rubric_file_contents.split('\n')
-        split_assignment = assignment_file_contents.split('\n')
-        length_rubric = len(split_rubric)
-        length_assignment = len(split_assignment)
-    
-        # loop according to shortest string
-        length = length_rubric if length_rubric < length_assignment else length_assignment
-        line_weights = Utilities.read_file(assignment.get_weights_file_path())
-        line_weights = line_weights.split()
-
-        # check for line-by-line inequality
-        for i in range(length):
-
-            #line-by-line inequality and deduct grades
-            if not equal_lines(split_rubric[i], split_assignment[i], assignment):
-                individual_assignment.wrong_lines.append(i + 1)
-                try:
-                    individual_assignment.grade = individual_assignment.grade - float(line_weights[i])
-                except IndexError:
-                    sys.exit("The Weights file is misconfigured. It might be shorter than the rubric. Cannot grade until fixed.")
-
-        # if student output is missing some data compared to rubric output
-        if length_rubric > length_assignment:
-            Utilities.log("Student's answer is shorter than the rubric, deducting grades of missing lines.")
-            individual_assignment.grade = individual_assignment.grade - sum([float(x) if i > length_assignment - 1 else 0 for i,x in enumerate(line_weights)])
-            
-        #elif length_rubric == length_assignment:
-            #Utilities.log("Normal Case")
-        # else:
-        #     # TODO: Figure out how to handle this situation
-        #     Utilities.log("CASE NOT HANDLED")
-
-    return individual_assignment
-
-def equal_lines(rubric_line, student_line, assignment):
-    """Compares 1 line in the key to 1 line in the student output
-    
-    The comparison takes into account precision issues for numbers, ASCII table formatting,
-    and strings that simply discribe the output but are not a part of the solution itself.
-
-    The algorithm uses the tolerance within the assignment to determine how many significant
-    digits to consider when comparing floats. If strings do not matter in the solution (i.e. 
-    strings merely describe the output but are not a part of the solution), strings are ignored
-    and numbers are extracted from the output instead. In addition, if the assignment includes
-    some table formatting, special characters are filtered out of the output to prevent issues
-    when comparing solutions with slightly different table formatting.
-
-    Args:
-        rubric_line (String): the line in the key to be evaluated against
-        student_line (String): the line in the student output being evaluated
-        assignment (Assignment): the current course assignment being evaluated
-
-    Returns:
-        (boolean): whether the lines are considered equal by the above standards
-    
-    """
-
     # find tolerance
     tolerance = 1e-09
     if assignment.tolerance == 1:
@@ -125,50 +70,41 @@ def equal_lines(rubric_line, student_line, assignment):
     elif assignment.tolerance == 3:
         tolerance = 1e-01
 
-    # remove table characters if table formatting is enabled
-    if assignment.table_formatting:
-        rubric_line = re.sub(r"[^a-zA-Z0-9]+", lambda x: '.' if x.group() == '.' else ' ', rubric_line)
-        student_line = re.sub(r"[^a-zA-Z0-9]+", lambda x: '.' if x.group() == '.' else ' ', student_line)
+    for rubric_dict in rubric_file_dicts:
+        is_wrong = False
+        k = rubric_dict["key"]
+        v = rubric_dict["value"]
+        w = rubric_dict["weight"]
+        Utilities.log(f"{k} -> {v} ({w})")
+        regex = Constants.RUBRIC_REGEX.replace("REPLACE", k)
+        #print(f"regex = {regex}")
+        matches = re.search(regex, assignment_file_contents)
+        if matches:
+            #print(f"Match(2) = {matches.group(2)} and Match(1) = {matches.group(1)}")
+            Utilities.log("Match found")
+            match = matches.group(2)
 
-    # split result by spaces
-    rubric_split = rubric_line.split()
-    student_split = student_line.split()
-    
-
-    # if strings don't matter, extract and compare the numbers using the above tolerance
-    if not assignment.strings_matter:
-        # remove non-numbers
-        rubric_line = ' '.join([word for word in rubric_line.split() if Utilities.is_number(word)])
-        student_line = ' '.join([word for word in student_line.split() if Utilities.is_number(word)])
-
-        # split result by spaces
-        rubric_split = rubric_line.split()
-        student_split = student_line.split()
-        # loop over remaining numbers after splitting
-        print("-------------------")
-        print("Rubric length: " + str(len(rubric_split)))
-        print(rubric_line)
-        print("Student length: " + str(len(student_split)))
-        print(student_line)
-        for i in range(len(rubric_split)):
-            if (Utilities.is_number(rubric_split[i]) and Utilities.is_number(student_split[i])):
-                if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
-                    return False
+            # If the value being graded is a number, see if it is close to the rubric
+            if Utilities.is_number(match):
+                if not Utilities.is_close(float(v), float(match), tolerance):
+                    Utilities.log(f"Wrong answer. {match} is not close to {v}")
+                    is_wrong = True
             else:
-                if not rubric_split[i] == student_split[i]:
-                    return False
-        return True
+                if not words_hash_is_equal(v, match):
+                    is_wrong = True
 
-    else:
-        for i in range(len(rubric_split)):
-
-            if not (Utilities.is_number(rubric_split[i]) and Utilities.is_number(student_split[i])):
-                if not words_hash_is_equal(rubric_split[i], student_split[i]):
-                    return False
+        else:
+            # no match was found
+            is_wrong = True
+        if is_wrong:
+            deduct_grade(individual_assignment, w)
+            if not matches:
+                individual_assignment.wrong_lines.append({'key': k, 'value': "Not found", 'correct': v})
             else:
-                if not Utilities.is_close(float(rubric_split[i]), float(student_split[i]), tolerance):
-                    return False
-        return True
+                individual_assignment.wrong_lines.append({'key': k, 'value': matches.group(2) if match else "Not found", 'correct': v})
+
+
+    return individual_assignment
 
 def words_hash_is_equal(rubric, student):
     return spell(rubric) == spell(student) or lev.distance(rubric, student)< Constants.LEVENSHTEIN_DISTANCE
@@ -224,6 +160,10 @@ def grade_assignmets(students, assignment):
     data_service = DataService()
     assignment.skipped_assignments = []
     assignment.individual_assignments = []
+
+    # get the rubric output file contents
+    rubric_file_dicts = Utilities.json_deserialize(assignment.get_rubric_file_path())
+
     # Loop through individual assignments
     for current_student in students:
 
@@ -238,12 +178,11 @@ def grade_assignmets(students, assignment):
             source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment), assignment, individual_assignment)
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment, assignment)
-            # get the rubric output file contents
-            rubric_file_contents = Utilities.read_file(assignment.get_rubric_file_path())
+
             # get the student output file contents
             assignment_file_contents = Utilities.read_file(relative_output_path)
             # grade assignment
-            individual_assignment = grade_assignment(rubric_file_contents, assignment_file_contents, individual_assignment, assignment)
+            individual_assignment = grade_assignment(rubric_file_dicts, assignment_file_contents, individual_assignment, assignment)
             # copy source report to individual assignment
             individual_assignment.source_report = source_report
             assignment.individual_assignments.append(individual_assignment)
@@ -324,7 +263,9 @@ def enter_new_assignment():
         Tk().withdraw()
         file_path = askopenfilename()
         print(file_path)
+
     confirm = "N"
+
     assignment = Assignment(name, course_name, [], strings_matter=strings_matter, table_formatting=table_formatting,input_file=file_path)
     
     # Add rubric
@@ -336,11 +277,11 @@ def enter_new_assignment():
     Utilities.write_file(assignment.get_rubric_file_path(), contents, "w+")
 
     # Add weights
-    Tk().withdraw()
-    file_path = askopenfilename()
-    contents = Utilities.read_file(file_path)
-    Utilities.create_file_dir_if_not_exists(assignment.get_weights_file_path())
-    Utilities.write_file(assignment.get_weights_file_path(), contents, "w+")
+    # Tk().withdraw()
+    # file_path = askopenfilename()
+    # contents = Utilities.read_file(file_path)
+    # Utilities.create_file_dir_if_not_exists(assignment.get_weights_file_path())
+    # Utilities.write_file(assignment.get_weights_file_path(), contents, "w+")
     while not confirm.upper() == "Y" or confirm.upper == "N":
         confirm = input("Save assignment? (Y/n) ")
         if confirm.upper() == "Y":
@@ -349,7 +290,7 @@ def enter_new_assignment():
 
             # Add students
             if len(matches) == 0:
-                print("This course does not have any students, please provide a file with student info in this format: Name LastName GitHubUserName.\n")
+                print("This course does not have any students, please provide a file with student info in json format.\n")
                 Tk().withdraw()
                 file_path = askopenfilename()
                 contents = Utilities.read_file(file_path)

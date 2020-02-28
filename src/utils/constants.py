@@ -25,3 +25,6 @@ class Constants:
     CMAKE_INCLUDE_DIRS = "REPLACE_INCLUDE_DIRS"
     CMAKE_SOURCE_GLOB = "REPLACE_SOURCE_GLOB"
     CMAKE_OUTPUT_DIR = "REPLACE_OUTPUT_DIRECTORY"
+
+    # RegEx
+    RUBRIC_REGEX = r"(?i)(\bREPLACE\b)\s*[=:][\s&$%#]*(\d+[.]?\d*|[\w\s][^\n]+)"

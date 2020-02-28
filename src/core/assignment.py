@@ -36,7 +36,7 @@ class Assignment(dict):
         return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/"
 
     def get_rubric_file_path(self):
-        return self.get_assignment_folder_path() + self.name + "_rubric.txt"
+        return self.get_assignment_folder_path() + self.name + "_rubric.json"
     
     def get_weights_file_path(self):
         return self.get_assignment_folder_path() + self.name + "_weights.txt"
@@ -51,6 +51,6 @@ class Assignment(dict):
         return path
 
     def get_students_file_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + "students.txt"
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + "students.json"
 
 
