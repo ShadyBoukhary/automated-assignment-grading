@@ -5,12 +5,14 @@ from core.source_report import SourceReport
 import copy
 class IndividualAssignment(dict):
 
-    def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=None):
+    def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=None, compiled=False, ran=False):
         self.name = name
         self.student = student
         self.course_name = course_name
         self.grade = grade
         self.wrong_lines = []
+        self.compiled = compiled
+        self.ran = ran
         self.source_report = source_report
 
     @classmethod
@@ -47,3 +49,6 @@ class IndividualAssignment(dict):
     
     def get_compile_output_path(self):
         return self.get_compile_output_dir() + self.name +  "_" + self.student.username + ".txt"
+
+    def get_runtime_error_output_path(self):
+        return self.get_compile_output_dir() + self.name +  "_" + self.student.username + "_runtime" + ".txt"

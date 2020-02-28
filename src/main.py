@@ -1,4 +1,6 @@
 from data.grader import grader
+import colorama
+
 
 
 def display_menu():
@@ -19,6 +21,7 @@ def get_menu_option():
 
 
 def main():
+    colorama.init(autoreset=True)
     display_menu()
     option = get_menu_option()
     while option < 3:

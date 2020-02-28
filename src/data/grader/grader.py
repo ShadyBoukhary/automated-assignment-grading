@@ -17,6 +17,8 @@ from utils.utilities import Utilities
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import re
+import colorama
+from custom.runtime_exception import RuntimeException
 
 
 def load_students(assignment):
@@ -75,19 +77,16 @@ def grade_assignment(rubric_file_dicts, assignment_file_contents, individual_ass
         k = rubric_dict["key"]
         v = rubric_dict["value"]
         w = rubric_dict["weight"]
-        Utilities.log(f"{k} -> {v} ({w})")
         regex = Constants.RUBRIC_REGEX.replace("REPLACE", k)
         #print(f"regex = {regex}")
         matches = re.search(regex, assignment_file_contents)
         if matches:
             #print(f"Match(2) = {matches.group(2)} and Match(1) = {matches.group(1)}")
-            Utilities.log("Match found")
             match = matches.group(2)
 
             # If the value being graded is a number, see if it is close to the rubric
             if Utilities.is_number(match):
                 if not Utilities.is_close(float(v), float(match), tolerance):
-                    Utilities.log(f"Wrong answer. {match} is not close to {v}")
                     is_wrong = True
             else:
                 if not words_hash_is_equal(v, match):
@@ -121,7 +120,7 @@ def run_assignment_executable(individual_assignment, assignment):
     """
 
     executable_path = individual_assignment.get_compile_output_dir() + "main" + Utilities.get_os_file_extension()
-    additional_args = ""
+    additional_args = " 2> " + individual_assignment.get_runtime_error_output_path()
     if not Utilities.path_exists(executable_path):
         err_message = "Executable path does not exist: " + executable_path
         e = IOError(err_message)
@@ -129,12 +128,20 @@ def run_assignment_executable(individual_assignment, assignment):
         raise e
     print(assignment.input_file)
     if not assignment.input_file == "":
-        additional_args = " <" + assignment.get_input_file_path()
+        additional_args = additional_args + " <" + assignment.get_input_file_path()
 
     relative_output_path = individual_assignment.get_output_path()
     shell_command = executable_path + additional_args + Constants.OUT_TO_FILE + relative_output_path
     Utilities.run_program(shell_command)
 
+    # Check for errors
+    runtime_results = Utilities.read_file(individual_assignment.get_runtime_error_output_path())
+    Utilities.delete_file(individual_assignment.get_runtime_error_output_path())
+
+    # sigghhh... what are you gonna do? gotta hardcode freshman system pause calls lol
+    if len(runtime_results) > 1 and not runtime_results == "sh: pause: command not found":
+        raise RuntimeException(runtime_results, runtime_results)
+        
     return relative_output_path
 
 def print_student_header(student):
@@ -176,15 +183,19 @@ def grade_assignmets(students, assignment):
             data_service.clone_repo(current_student, assignment)
             # check if the source compiles at all
             source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment), assignment, individual_assignment)
+            individual_assignment.compiled = True
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment, assignment)
-
+            individual_assignment.ran = True
             # get the student output file contents
             assignment_file_contents = Utilities.read_file(relative_output_path)
             # grade assignment
             individual_assignment = grade_assignment(rubric_file_dicts, assignment_file_contents, individual_assignment, assignment)
             # copy source report to individual assignment
             individual_assignment.source_report = source_report
+            # to avoid grades like 0.001
+            if individual_assignment.grade < 1:
+                individual_assignment.grade = 0
             assignment.individual_assignments.append(individual_assignment)
 
         except IOError as e:
@@ -199,8 +210,16 @@ def grade_assignmets(students, assignment):
 
         except CompilationException as e:
             Utilities.log(e.message)
+            Utilities.log(e.details)
             # TODO decide how much to deduct exactly
             individual_assignment.grade = 0
+            assignment.individual_assignments.append(individual_assignment)
+
+        except RuntimeException as e:
+            Utilities.log(e.message)
+            # TODO: decide how much to deduct exactly
+            individual_assignment.grade = 0
+            assignment.individual_assignments.append(individual_assignment)
 
         finally:
             strr = " | Functions: " + str(len(individual_assignment.source_report.functions)) if not individual_assignment.source_report == None else ""
@@ -335,6 +354,7 @@ def update_assignment(assignment):
             assignments[i] = assignment
     save_assignments(assignments)
 
+
 def grade():
     """Grades an assignment for all students and generates a report """
 
@@ -342,4 +362,5 @@ def grade():
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
     update_assignment(assignment)
+    report_generator.printSummary(assignment)
     report_generator.generate_report(assignment)

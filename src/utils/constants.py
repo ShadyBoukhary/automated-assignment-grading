@@ -1,3 +1,4 @@
+from colorama import Fore
 class Constants:
     """Contains application-wide constants"""
 
@@ -9,7 +10,7 @@ class Constants:
 
     CLONE_DIRECTORY = "/automated_grading_repos"
     CROSS_MARK = "\u274c"
-    CHECK_MARK = "\u2713"
+    CHECK_MARK = Fore.GREEN + "\u2713"
     LEVENSHTEIN_DISTANCE = 3
     CPP_PRIMITIVE_TYPES = [
         "short int", "unsigned short int", "unsigned int", "int",

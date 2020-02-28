@@ -4,6 +4,47 @@ from statistics import median, stdev
 from utils.constants import Constants
 from utils.utilities import Utilities
 import pandas as pd
+from colorama import Fore, Back, Style
+
+
+
+def printSummary(assignment):
+    Utilities.log(f"\n{Fore.YELLOW}--------------- Summary ---------------\n")
+
+    Utilities.log("{:<25}".format("Student Name"), True)
+    Utilities.log("{:>10}".format("Compiled"), True)
+    Utilities.log("{:>20}".format("Ran Successfully"), True)
+
+    Utilities.log("{:>15}".format("Grade"))
+    Utilities.log("-" * 80)
+
+    for individual_assignment in assignment.individual_assignments:
+
+        grade = individual_assignment.grade
+        color = None
+        if grade >= 90:
+            color = Fore.GREEN
+        elif grade >= 70:
+            color = Fore.BLUE
+        else:
+            color = Fore.RED
+        
+        compiled = "YES"
+        compiled_color = Fore.GREEN
+        ran = "YES"
+        ran_color = Fore.GREEN
+        if not individual_assignment.compiled:
+            compiled = "NO"
+            compiled_color = Fore.RED
+        if not individual_assignment.ran:
+            ran = "NO"
+            ran_color = Fore.RED
+        Utilities.log("{:<25}".format(individual_assignment.student.name), True)
+        Utilities.log("{:>15}".format(f"{compiled_color}{compiled}"), True)
+        Utilities.log("{:>25}".format(f"{ran_color}{ran}"), True)
+
+        Utilities.log("{:>20}".format(f"{color}{individual_assignment.grade}"))
+
 
 
 def generate_report(assignment):
@@ -20,17 +61,20 @@ def generate_report(assignment):
     Utilities.log("\nGenerating report... ", True)
     # All student grades for assignment
     grades = [individual_assignment.grade for individual_assignment in assignment.individual_assignments]
+    names = [individual_assignment.student.name for individual_assignment in assignment.individual_assignments]
+
     if len(grades) < 1:
         return
+
+
     grades_counter = Counter(grades)
 
     # Prepare data
     cat_1 = ['Grades']
-    index_1 = range(0, 101, 1)
+    index_1 = names
     multi_iter1 = {'index': index_1}
-
     for cat in cat_1:
-        multi_iter1[cat] = [grades_counter[x] if x in grades_counter else 0 for x in index_1]
+        multi_iter1[cat] = grades
 
     # Create a Pandas dataframe using the grades
     index_2 = multi_iter1.pop('index')
@@ -48,28 +92,8 @@ def generate_report(assignment):
     workbook = writer.book
     worksheet = writer.sheets[sheet_name]
 
-    # Create a Chart object
-    chart = workbook.add_chart({"type": "column"})
-
-    # Configure chart series from dataframe
-    chart.add_series({
-    'categories': [sheet_name, 1, 0, 101, 0], #row #col #row #col
-    'values':     [sheet_name, 1, 1, 101, 1],
-    "gap":        50
-    })
-
-    # Configure the chart axes.
-    chart.set_x_axis({'name': 'Grade', 'position_axis': 'on_tick'})
-    chart.set_y_axis({'name': 'Number of Students', 'major_gridlines': {'visible': False}})
-
-    # Turn off chart legend. It is on by default in Excel.
-    chart.set_legend({'position': 'none'})
-
-    # Insert the chart into the worksheet.
-    worksheet.insert_chart('D10: J25', chart)
-
-
-    # Generate table
+    #        # Set the column widths.
+    worksheet.set_column("A:B", 18)
 
     # Set the column widths.
     worksheet.set_column("D:F", 18)

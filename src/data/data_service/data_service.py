@@ -19,7 +19,6 @@ class DataService:
         
         try:
             student_dicts = Utilities.json_deserialize(assignment.get_students_file_path())
-            print(student_dicts)
             students = []
 
             for s_dict in student_dicts:
