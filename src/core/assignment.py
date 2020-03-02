@@ -3,7 +3,7 @@ from core.individual_assignment import IndividualAssignment
 import copy
 class Assignment(dict):
 
-    def __init__(self, name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True, input_file="", skipped_assignments=[]):
+    def __init__(self, name, course_name, individual_assignments, tolerance = 0, table_formatting = False, strings_matter = True, input_file="", skipped_assignments=[], executionOnly=False):
         self.name = name
         self.course_name = course_name
         self.individual_assignments = individual_assignments
@@ -12,6 +12,7 @@ class Assignment(dict):
         self.table_formatting = table_formatting
         self.strings_matter = strings_matter
         self.input_file = input_file
+        self.executionOnly = executionOnly
         if not input_file == "":
             contents = Utilities.read_file(input_file)
             Utilities.create_file_dir_if_not_exists(self.get_input_file_path())

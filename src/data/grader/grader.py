@@ -129,9 +129,10 @@ def run_assignment_executable(individual_assignment, assignment):
     print(assignment.input_file)
     if not assignment.input_file == "":
         additional_args = additional_args + " <" + assignment.get_input_file_path()
-
+    
     relative_output_path = individual_assignment.get_output_path()
     shell_command = executable_path + additional_args + Constants.OUT_TO_FILE + relative_output_path
+    print("Shell command " + str(shell_command))
     Utilities.run_program(shell_command)
 
     # Check for errors
@@ -169,7 +170,6 @@ def grade_assignmets(students, assignment):
     assignment.individual_assignments = []
 
     # get the rubric output file contents
-    rubric_file_dicts = Utilities.json_deserialize(assignment.get_rubric_file_path())
 
     # Loop through individual assignments
     for current_student in students:
@@ -187,15 +187,17 @@ def grade_assignmets(students, assignment):
             # get output file path after running the student's program
             relative_output_path = run_assignment_executable(individual_assignment, assignment)
             individual_assignment.ran = True
-            # get the student output file contents
-            assignment_file_contents = Utilities.read_file(relative_output_path)
-            # grade assignment
-            individual_assignment = grade_assignment(rubric_file_dicts, assignment_file_contents, individual_assignment, assignment)
-            # copy source report to individual assignment
-            individual_assignment.source_report = source_report
-            # to avoid grades like 0.001
-            if individual_assignment.grade < 1:
-                individual_assignment.grade = 0
+            if not assignment.executionOnly:
+                rubric_file_dicts = Utilities.json_deserialize(assignment.get_rubric_file_path())
+                # get the student output file contents
+                assignment_file_contents = Utilities.read_file(relative_output_path)
+                # grade assignment
+                individual_assignment = grade_assignment(rubric_file_dicts, assignment_file_contents, individual_assignment, assignment)
+                # copy source report to individual assignment
+                individual_assignment.source_report = source_report
+                # to avoid grades like 0.001
+                if individual_assignment.grade < 1:
+                    individual_assignment.grade = 0
             assignment.individual_assignments.append(individual_assignment)
 
         except IOError as e:
@@ -288,12 +290,17 @@ def enter_new_assignment():
     assignment = Assignment(name, course_name, [], strings_matter=strings_matter, table_formatting=table_formatting,input_file=file_path)
     
     # Add rubric
-    print("Please select the rubric file.")
-    Tk().withdraw()
-    file_path = askopenfilename()
-    contents = Utilities.read_file(file_path)
-    Utilities.create_file_dir_if_not_exists(assignment.get_rubric_file_path())
-    Utilities.write_file(assignment.get_rubric_file_path(), contents, "w+")
+    rubric_choice = input("Would you like enter to a rubric file? (y/N)")
+    if rubric_choice.upper() == "Y":
+        Tk().withdraw()
+        file_path = askopenfilename()
+        contents = Utilities.read_file(file_path)
+        Utilities.create_file_dir_if_not_exists(assignment.get_rubric_file_path())
+        Utilities.write_file(assignment.get_rubric_file_path(), contents, "w+")
+    else:
+        assignment.executionOnly = True
+        Utilities.log("Assignment will be graded only by compilation and execution.")
+    
 
     # Add weights
     # Tk().withdraw()
