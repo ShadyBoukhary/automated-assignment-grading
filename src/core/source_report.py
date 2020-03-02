@@ -1,5 +1,7 @@
 from core.function import Function
 import copy
+
+
 class SourceReport(dict):
 
     def __init__(self, primitive_types=[], functions=[]):
@@ -15,8 +17,8 @@ class SourceReport(dict):
         sr = cls(data["primitive_types"], data["functions"])
         sr.functions = list(map(Function.from_json, data["functions"]))
 
-
     def to_dict(self):
         dic = copy.deepcopy(self.__dict__)
         dic["functions"] = [fun.to_dict() for fun in self.functions]
+
         return dic

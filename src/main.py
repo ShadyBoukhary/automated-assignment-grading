@@ -2,7 +2,6 @@ from data.grader import grader
 import colorama
 
 
-
 def display_menu():
     print("Enter the the number of the command.\nCTRL-C or 3 to exit.\n")
     print("1. " + "Grade an Assignments.")
@@ -31,4 +30,5 @@ def main():
         option = get_menu_option()
 
 
-main()
+if __name__ == "__main__":
+    main()

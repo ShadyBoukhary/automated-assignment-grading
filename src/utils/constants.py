@@ -1,4 +1,6 @@
 from colorama import Fore
+
+
 class Constants:
     """Contains application-wide constants"""
 
@@ -6,7 +8,7 @@ class Constants:
     WINDOWS_SYSTEM = "win32"
     MAC_SYSTEM = "darwin"
     LINUX_SYSTEM = "linux"
-    BASE_URL="https://github.com/"
+    BASE_URL = "https://github.com/"
 
     CLONE_DIRECTORY = "/automated_grading_repos"
     CROSS_MARK = "\u274c"
@@ -18,7 +20,6 @@ class Constants:
         "signed char", "char", "unsigned char", "float", "double", "long double", "wchar_t,", "void",
         "string", "std::string"
     ]
-
 
     # CMAKE
     CMAKE_PROJECT_NAME = "REPLACE_PROJECT_NAME"
