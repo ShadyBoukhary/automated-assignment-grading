@@ -4,15 +4,24 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+mypy = "*"
+pylama = "*"
 
 [packages]
 autoflake = "*"
 flake8 = "*"
 epc = "*"
 importmagic = "*"
-ipython = "*"
 python-language-server = {extras = ["all"],version = "*"}
-levenshtein = "*"
+click = "*"
+python-levenshtein = "*"
+colorama = "*"
+pandas = "*"
+gitpython = "*"
+requests = "*"
+autocorrect = "*"
+xlsxwriter = "*"
+pyinquirer = "*"
 
 [requires]
 python_version = "3.7"

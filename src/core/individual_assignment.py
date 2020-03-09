@@ -7,15 +7,15 @@ import copy
 
 class IndividualAssignment(dict):
 
-    def __init__(self, name, s, cn, g=100, wl=[], sr=None, c=False, r=False):
+    def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=None, compiled=False, ran=False):
         self.name = name
-        self.student = s
-        self.course_name = cn
-        self.grade = g
-        self.wrong_lines = wl
-        self.compiled = c
-        self.ran = r
-        self.source_report = sr
+        self.student = student
+        self.course_name = course_name
+        self.grade = grade
+        self.wrong_lines = wrong_lines
+        self.compiled = False
+        self.ran = ran
+        self.source_report = source_report
 
     @classmethod
     def from_json(cls, data):

@@ -9,5 +9,11 @@ reports/
 logs/
 resources/*/*/compile-temp/
 .env
+*cache*
+resources/*
+!resources/CMakeLists.txt
+setup.cfg
+regex_test.py
 
+tmp/
 

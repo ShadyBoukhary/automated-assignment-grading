@@ -1,4 +1,5 @@
 from colorama import Fore
+from PyInquirer import style_from_dict, Token
 
 
 class Constants:
@@ -30,3 +31,58 @@ class Constants:
 
     # RegEx
     RUBRIC_REGEX = r"(?i)(\bREPLACE\b)\s*[=:][\s&$%#]*(\d+[.]?\d*|[\w\s][^\n]+)"
+
+    # Command help
+    STUDENT_HELP = '''
+The rubric file to be used for the assignment. Must be in json format
+Example:
+[
+{
+"firstName":"Paige",
+"lastName":"Champaigne",
+"username":"paigechampagne"
+},
+{
+"firstName":"Chris",
+"lastName":"Something",
+"username":"chris473"
+},
+{
+"firstName":"Blake",
+"lastName":"Wilson",
+"username":"BlakeWilson"
+},
+{
+"firstName":"Shady",
+"lastName":"Boukhary",
+"username":"shadyboukhary"
+}
+]
+    '''
+
+    RUBRIC_HELP = '''
+[
+{
+"key":"subtotal",
+"value":9350.00,
+"weight":33.33
+},
+{
+"key":"tax amount",
+"value":771.38,
+"weight":33.33
+}
+]
+'''
+
+# Styles
+
+    STYLE = style_from_dict({
+                Token.Separator: '#cc5454',
+                Token.QuestionMark: '#673ab7 bold',
+                Token.Selected: '#cc5454',  # default
+                Token.Pointer: '#673ab7 bold',
+                Token.Instruction: '',  # default
+                Token.Answer: '#f44336 bold',
+                Token.Question: '',
+            })

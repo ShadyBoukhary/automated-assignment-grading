@@ -29,8 +29,7 @@ def load_students(assignment):
     """
 
     Utilities.log("Retrieving student data... ", True)
-    data_service = DataService()
-    students = data_service.load_students(assignment)
+    students = DataService.load_students(assignment)
     Utilities.log(Constants.CHECK_MARK)
     return students
 
@@ -142,8 +141,7 @@ def run_assignment_executable(individual_assignment, assignment):
         raise e
     print(assignment.input_file)
     if not assignment.input_file == "":
-        additional_args = additional_args + " <"
-        + assignment.get_input_file_path()
+        additional_args = additional_args + " <" + assignment.get_input_file_path()
 
     relative_output_path = individual_assignment.get_output_path()
     shell_command = executable_path + additional_args + \
@@ -189,7 +187,6 @@ def grade_assignmets(students, assignment):
     """
 
     Utilities.log("Grading assignments...")
-    data_service = DataService()
     assignment.skipped_assignments = []
     assignment.individual_assignments = []
 
@@ -205,7 +202,7 @@ def grade_assignmets(students, assignment):
 
         try:
             # clone the current student's assignment
-            data_service.clone_repo(current_student, assignment)
+            DataService.clone_repo(current_student, assignment)
             # check if the source compiles at all
             source_report = source_analyzer. \
                 analyze_source(current_student.get_assignment_path(
@@ -283,11 +280,10 @@ def get_assignments(checkFirst):
         ([Assignment]): list of assignments
 
     """
-    data_service = DataService()
     try:
         if checkFirst:
-            data_service.create_assignments_file()
-        return data_service.get_assignments()
+            DataService.create_assignments_file()
+        return DataService.get_assignments()
     except IOError:
         sys.exit(
             "Failed to retrieve assignments. Make sure that the file exists. Perhaps enter a new assignment first?")
@@ -298,9 +294,8 @@ def get_assignments(checkFirst):
 def save_assignments(assignments):
     """Saves assignmetns on disk """
 
-    data_service = DataService()
     try:
-        data_service.save_assignments(assignments)
+        DataService.save_assignments(assignments)
         Utilities.log("Assignment saved!")
     except Exception as e:
         Utilities.log("ERROR: " + str(e))
@@ -417,10 +412,10 @@ def update_assignment(assignment):
     save_assignments(assignments)
 
 
-def grade():
+def grade(assignment):
     """Grades an assignment for all students and generates a report """
 
-    assignment = get_assignment_to_grade()
+    # assignment = get_assignment_to_grade()
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
     update_assignment(assignment)

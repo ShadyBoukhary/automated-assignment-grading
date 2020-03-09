@@ -3,6 +3,9 @@ import sys
 import json
 from utils.constants import Constants
 import errno
+import shutil
+
+
 class Utilities:
     """Static class containing utility methods"""
 
@@ -48,7 +51,7 @@ class Utilities:
     @staticmethod
     def obj_dict(obj):
         return obj.__dict__
-        
+
     @staticmethod
     def json_serialize(filename, obj):
         try:
@@ -62,15 +65,8 @@ class Utilities:
             print("JSON ERROR: " + str(e))
 
     @staticmethod
-    def run_program(path):            
+    def run_program(path):
         os.system(path)
-
-    # @staticmethod
-    # def compile_source(path, output_dir, output_path, language, executable_path):
-    #     if not Utilities.path_exists(output_dir):
-    #         Utilities.create_dir(output_dir)
-    #     if language == "cpp":
-    #         os.system("g++ -o " + executable_path + " " + path + " 2>" + output_path)
 
     @staticmethod
     def compile_with_cmake(build_dir, build_log_path):
@@ -83,7 +79,7 @@ class Utilities:
         if not os.path.exists(os.path.dirname(filename)):
             try:
                 os.makedirs(os.path.dirname(filename))
-            except OSError as exc: # Guard against race condition
+            except OSError as exc:
                 if exc.errno != errno.EEXIST:
                     raise
 
@@ -121,7 +117,6 @@ class Utilities:
     def get_resources_dir():
         return Utilities.get_full_dir_path() + "/../../resources/"
 
-
     @staticmethod
     def get_log_path():
         path = Utilities.get_full_dir_path() + "/../../logs/log.txt"
@@ -140,7 +135,7 @@ class Utilities:
     @staticmethod
     def log(str, end=False):
         print(str, end="") if end else print(str)
-        #Utilities.append_file(Utilities.get_log_path(), str)
+        # Utilities.append_file(Utilities.get_log_path(), str)
         Utilities.flush()
 
     @staticmethod
@@ -166,3 +161,8 @@ class Utilities:
     @staticmethod
     def get_cmake_template_path():
         return Utilities.get_resources_dir() + "CMakeLists.txt"
+
+    @staticmethod
+    def delete_dir_recur(direc):
+        if Utilities.path_exists(direc):
+            shutil.rmtree(direc)

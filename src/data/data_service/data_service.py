@@ -8,11 +8,14 @@ from utils.constants import Constants
 from utils.utilities import Utilities
 from core.student import Student
 from core.assignment import Assignment
+from custom.deletion_exception import DeletionException
+from custom.assignment_exception import AssignmentException
 
 
 class DataService:
 
-    def load_students(self, assignment):
+    @staticmethod
+    def load_students(assignment):
         """Retrieves students for an assignment from a file on disk"""
 
         try:
@@ -34,7 +37,8 @@ class DataService:
             sys.exit("Could not read students file. Please make sure the \
                 following file exists: " + assignment.get_students_file_path())
 
-    def get_assignments(self):
+    @staticmethod
+    def get_assignments():
         """Retrieves assignments from json file. Converts the dict \
             retrieved to a list of assignments """
 
@@ -51,13 +55,12 @@ class DataService:
                     for a_dict in assignment_dicts]
 
         except json.JSONDecodeError:
-            print("No assignments found or file is corrupted.")
             return []
 
     # def assignments_dict_to_object(assignment_dicts):
     #     return
-
-    def save_assignments(self, assignments):
+    @staticmethod
+    def save_assignments(assignments):
         """Saves all assignments to a JSON file
 
         Args:
@@ -73,7 +76,8 @@ class DataService:
         except json.JSONDecodeError as e:
             raise e
 
-    def clone_repo(self, current_student, assignment):
+    @staticmethod
+    def clone_repo(current_student, assignment):
         """Clones a github repo for a specific username into a specific directory
 
         Args:
@@ -111,9 +115,58 @@ class DataService:
             Utilities.log(Constants.CROSS_MARK)
             raise e
 
-    def create_assignments_file(self):
+    @staticmethod
+    def create_assignments_file():
         """ Creates the file containing the assignments if it does not exist"""
 
         if not Utilities \
                 .path_exists(Utilities.get_assignment_data_file_path()):
             open(Utilities.get_assignment_data_file_path(), 'a').close()
+
+    @staticmethod
+    def create_assignment(assignment):
+        '''Appends new assignment'''
+
+        DataService.create_assignments_file()
+        assignments = DataService.get_assignments()
+        assignments.append(assignment)
+        DataService.save_assignments(assignments)
+
+    @staticmethod
+    def assignment_exists(course_name, assignment_name):
+        '''Checks if an assignment exists'''
+        DataService.create_assignments_file()
+        assignments = DataService.get_assignments()
+        idx = DataService.search_assignments(course_name, assignment_name, assignments)
+
+        if idx < 0:
+            return False
+        return True
+
+    @staticmethod
+    def delete_assignment(course_name, assignment_name):
+        DataService.create_assignments_file()
+        assignments = DataService.get_assignments()
+        idx = DataService.search_assignments(course_name, assignment_name, assignments)
+
+        if idx < 0:
+            raise DeletionException(f'Assignment {assignment_name} in course {course_name} does not exist')
+
+        deleted_assignment = assignments.pop(idx)
+        DataService.save_assignments(assignments)
+        Utilities.delete_dir_recur(deleted_assignment.get_assignment_folder_path())
+
+    def search_assignments(course_name, assignment_name, assignments):
+        for i, assignment in enumerate(assignments):
+            if assignment.name == assignment_name and assignment.course_name == course_name:
+                return i
+        return -1
+
+    def get_assignment_and_assignments(course_name, assignment_name):
+        assignments = DataService.get_assignments()
+        idx = DataService.search_assignments(course_name, assignment_name, assignments)
+        if idx < 0:
+            raise AssignmentException(f'Assignment {assignment_name} in course {course_name} does not exist')
+
+        return assignments[idx], assignments
+

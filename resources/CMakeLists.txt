@@ -18,3 +18,6 @@ include_directories(REPLACE_INCLUDE_DIRS)
 
 file(GLOB source REPLACE_SOURCE_GLOB)
 add_executable(${EXECUTABLE_NAME} ${source})
+# Disable all warning so the grader doesn't treat them as compilation errors and assign a grade of zero
+target_compile_options(${EXECUTABLE_NAME} PRIVATE "-w")
+
