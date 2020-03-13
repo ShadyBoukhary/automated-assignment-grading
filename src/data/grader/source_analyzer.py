@@ -6,6 +6,7 @@ from custom.compilation_exception import CompilationException
 from utils.constants import Constants
 from utils.utilities import Utilities
 import glob
+from colorama import Fore
 
 
 
@@ -28,15 +29,13 @@ def analyze_source(sources_path, assignment, individual_assignment):
     
     """
 
-    Utilities.log("Compiling... ", True)
-    Utilities.flush()
     try:
         result, error = verify_compilation(sources_path, individual_assignment.get_compile_output_dir(), individual_assignment.get_compile_output_path(), "cpp", individual_assignment)
         if result:
             sources = read_sources_and_headers(sources_path)
             # TODO: Keep track of functions in source, maybe loops too?
             source_report = analyze(sources, "cpp")
-            Utilities.log(Constants.CHECK_MARK)
+            #Utilities.log(Constants.CHECK_MARK)
             return source_report
         else:
             raise CompilationException(Constants.CROSS_MARK, error)
@@ -63,7 +62,7 @@ def analyze_cpp(sources):
         SourceReport        : the report generated using the given source files' contents
     
      """
-    source_report = SourceReport(Constants.CPP_PRIMITIVE_TYPES)
+    source_report = SourceReport()
 
     # for every source/header file contents
     for source in sources:
@@ -131,10 +130,8 @@ def verify_compilation(path, compile_output_dir, compile_output_path, language, 
         (boolean, String)               : Tuple with a flag indicating compilation result and any error messages
     
     """
-
     if not Utilities.path_exists(path):
-        message = "Assignment folder does not exist, aborting compilation."
-        Utilities.log(message)
+        message = f"Could not find assignment for student. Path {path} does not exist."
         return False, message
     executable_name = "main" + Utilities.get_os_file_extension()
     

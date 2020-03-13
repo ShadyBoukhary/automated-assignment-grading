@@ -16,35 +16,6 @@ from colorama import Fore
 print_color = Fore.LIGHTMAGENTA_EX
 
 
-def display_menu():
-    print("Enter the the number of the command.\nCTRL-C or 3 to exit.\n")
-    print("1. " + "Grade an Assignments.")
-    print("2. " + "Enter a new assignment.")
-
-
-def get_menu_option():
-    valid = False
-    while not valid:
-        try:
-            val = int(input())
-            valid = True
-            return val
-        except ValueError:
-            print("Must be an integer.")
-
-
-def main1():
-    print("Welcome to AAA CLI!")
-    colorama.init(autoreset=True)
-    display_menu()
-    option = get_menu_option()
-    while option < 3:
-        grader.grade() if option == 1 else grader.enter_new_assignment()
-        print("\n")
-        display_menu()
-        option = get_menu_option()
-
-
 @click.group()
 @click.help_option('--help', '-h')
 def main():
@@ -147,12 +118,7 @@ def delete(course_name, assignment_name):
 @click.help_option('--help', '-h')
 def alist(interactive, course_name):
     '''Lists all the assignments'''
-    assignments = DataService.get_assignments()
-    courses = {}
-    for assignment in assignments:
-        courses[assignment.course_name] = []
-    for assignment in assignments:
-        courses[assignment.course_name].append(assignment.name)
+    assignments, assignments_by_full_name, courses = categorizeAssignments()
 
     if interactive:
         questions = [
@@ -193,17 +159,11 @@ def alist(interactive, course_name):
               mutually_exclusive=['interactive'])
 @click.option('--dry-run', '-d',
               is_flag=True,
-              help='Compiles and runs without assigning a grade')
+              help='Compiles and runs without assigning a grade or saving results.')
 @click.help_option('--help', '-h')
 def grade(interactive, course_name, assignment_name, dry_run):
-    assignments = DataService.get_assignments()
-    assignments_by_full_name = {}
-    courses = {}
-    for assignment in assignments:
-        courses[assignment.course_name] = []
-    for assignment in assignments:
-        courses[assignment.course_name].append(assignment.name)
-        assignments_by_full_name[f'{assignment.course_name}{assignment.name}'] = assignment
+    '''Grades an assignment'''
+    assignments, assignments_by_full_name, courses = categorizeAssignments()
 
     if interactive:
         questions = [
@@ -223,12 +183,11 @@ def grade(interactive, course_name, assignment_name, dry_run):
         full_name = f"{full_name}{answer['Assignments']}"
 
         assignment_to_grade = assignments_by_full_name[full_name]
-        print(assignment_to_grade.name)
-        grader.grade(assignment_to_grade)
+        grader.grade(assignment_to_grade, dry_run)
     elif course_name and assignment_name:
         try:
             assignment_to_grade, assignments = DataService.get_assignment_and_assignments(course_name, assignment_name)
-            grader.grade(assignment_to_grade)
+            grader.grade(assignment_to_grade, dry_run)
         except AssignmentException as e:
             raise click.UsageError(e.message)
     else:
@@ -236,6 +195,77 @@ def grade(interactive, course_name, assignment_name, dry_run):
 E.g.: aaa grade -c course -a assignment.
 Use `--help` for more information''')
 
+
+@main.command()
+@click.option('--interactive', '-i',
+              is_flag=True,
+              help='Interactive list',
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=['course_name, assignment_name'])
+@click.option('--course_name', '-c',
+              help='Assignment in course',
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=['interactive'])
+@click.option('--assignment_name', '-a',
+              help='Assignment',
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=['interactive'])
+@click.help_option('--help', '-h')
+def sum(interactive, course_name, assignment_name):
+    '''Shows the summary of a graded assignment'''
+
+    assignments, assignments_by_full_name, courses = categorizeAssignments()
+
+    if interactive:
+        questions = [
+            {
+                'type': 'list',
+                'message': 'Select course',
+                'name': 'Courses',
+                'choices': courses.keys()
+            }
+        ]
+        answer = prompt(questions, style=Constants.STYLE)
+        full_name = answer['Courses']
+        questions[0]['message'] = 'Select assignment to to summarize'
+        questions[0]['name'] = 'Assignments'
+        questions[0]['choices'] = courses[full_name]
+        answer = prompt(questions, style=Constants.STYLE)
+        full_name = f"{full_name}{answer['Assignments']}"
+
+        assignment_to_summarize = assignments_by_full_name[full_name]
+        if len(assignment_to_summarize.individual_assignments) < 1:
+            raise click.UsageError("An assignment must be graded before it can be summarized")
+
+        grader.summarize(assignment_to_summarize)
+    elif course_name and assignment_name:
+        try:
+            assignment_to_summarize, assignments = DataService.get_assignment_and_assignments(course_name, assignment_name)
+            if len(assignment_to_summarize.individual_assignments) < 1:
+                raise click.UsageError("An assignment must be graded before it can be summarized")
+
+            grader.summarize(assignment_to_summarize)
+        except AssignmentException as e:
+            raise click.UsageError(e.message)
+    else:
+        raise click.UsageError('''Must provide course_name and assignment_name.
+E.g.: aaa sum -c course -a assignment or aaa sum -i
+Use `--help` for more information''')
+
+
+def categorizeAssignments():
+    assignments = DataService.get_assignments()
+    if len(assignments) == 0:
+        raise click.UsageError("Error: There are no assignments.")
+    assignments_by_full_name = {}
+    courses = {}
+    for assignment in assignments:
+        courses[assignment.course_name] = []
+    for assignment in assignments:
+        courses[assignment.course_name].append(assignment.name)
+        assignments_by_full_name[f'{assignment.course_name}{assignment.name}'] = assignment
+
+    return assignments, assignments_by_full_name, courses,
 
 if __name__ == "__main__":
     main()

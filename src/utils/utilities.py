@@ -5,6 +5,9 @@ from utils.constants import Constants
 import errno
 import shutil
 
+DEBUG = os.environ['DEBUG']
+DEBUG = True if DEBUG == 'True' else False
+
 
 class Utilities:
     """Static class containing utility methods"""
@@ -139,6 +142,11 @@ class Utilities:
         Utilities.flush()
 
     @staticmethod
+    def Debug(str):
+        if DEBUG:
+            print(str)
+
+    @staticmethod
     def is_number(s):
         try:
             float(s)
@@ -155,8 +163,8 @@ class Utilities:
         return sum(bytearray(word, "utf-8"))
 
     @staticmethod
-    def construct_repo_path(assignment, current_student):
-        return assignment.course_name + "/" + current_student.repo
+    def construct_repo_path(current_student):
+        return current_student.repo
 
     @staticmethod
     def get_cmake_template_path():

@@ -7,18 +7,36 @@ import pandas as pd
 from colorama import Fore, Back, Style
 
 
+def printSummary(assignment, dry_run):
+    errorSummary(assignment)
+    gradeSummary(assignment, dry_run)
 
-def printSummary(assignment):
+
+def errorSummary(assignment):
+    Utilities.log(f"\n{Fore.YELLOW}--------------- Error Details ---------------\n")
+
+    for individual_assignment in assignment.individual_assignments + assignment.skipped_assignments:
+        if individual_assignment.has_error():
+            print(f"{Back.RED}{individual_assignment.student.name}{Back.RESET}: {Fore.RED}{individual_assignment.error_details}")
+
+
+def gradeSummary(assignment, dry_run):
     Utilities.log(f"\n{Fore.YELLOW}--------------- Summary ---------------\n")
 
     Utilities.log("{:<25}".format("Student Name"), True)
     Utilities.log("{:>10}".format("Compiled"), True)
     Utilities.log("{:>20}".format("Ran Successfully"), True)
 
-    Utilities.log("{:>15}".format("Grade"))
-    Utilities.log("-" * 80)
+    if not dry_run:
+        Utilities.log("{:>20}".format(f"{Fore.YELLOW}Grade"), True)
+    Utilities.log("{:>15}".format("Skipped"), True)
+    Utilities.log("{:>40}".format("Error (see above)"))
+    Utilities.log("-" * 125)
 
-    for individual_assignment in assignment.individual_assignments:
+    i_normal_list = [(f"{Fore.GREEN}NO", i) for i in assignment.individual_assignments]
+    i_skipped_list = [(f"{Fore.RED}YES", i) for i in assignment.skipped_assignments]
+    i_list = i_normal_list + i_skipped_list
+    for skipped, individual_assignment in i_list:
 
         grade = individual_assignment.grade
         color = None
@@ -43,7 +61,11 @@ def printSummary(assignment):
         Utilities.log("{:>15}".format(f"{compiled_color}{compiled}"), True)
         Utilities.log("{:>25}".format(f"{ran_color}{ran}"), True)
 
-        Utilities.log("{:>20}".format(f"{color}{individual_assignment.grade}"))
+        if not dry_run:
+            Utilities.log("{:>20}".format(f"{color}{individual_assignment.grade}"), True)
+        Utilities.log("{:>20}".format(skipped), True)
+        Utilities.log("{:>40}".format(individual_assignment.error))
+
 
 
 

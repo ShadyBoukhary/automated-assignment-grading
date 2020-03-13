@@ -10,6 +10,7 @@ from core.student import Student
 from core.assignment import Assignment
 from custom.deletion_exception import DeletionException
 from custom.assignment_exception import AssignmentException
+from pprint import pprint
 
 
 class DataService:
@@ -43,11 +44,8 @@ class DataService:
             retrieved to a list of assignments """
 
         try:
-            assignment_dicts =  \
-                Utilities.json_deserialize(Utilities
-                                           .get_assignment_data_file_path())
-
-            if assignment_dicts[0] == {}:
+            assignment_dicts = Utilities.json_deserialize(Utilities.get_assignment_data_file_path())
+            if assignment_dicts == [] or assignment_dicts is None:
                 return []
             # convert list of dict containing an assignment into
             #  list of Assignment objects
@@ -86,9 +84,7 @@ class DataService:
 
         """
 
-        path_to_clone_to = Utilities.get_home_directory() \
-            + Constants.CLONE_DIRECTORY + "/" + \
-            Utilities.construct_repo_path(assignment, current_student)
+        path_to_clone_to = assignment.get_clone_path() + Utilities.construct_repo_path(current_student)
 
         path_to_clone_from = Constants.BASE_URL + \
             current_student.username + "/" + current_student.repo + ".git"
@@ -96,23 +92,19 @@ class DataService:
         try:
 
             if Utilities.path_exists(path_to_clone_to):
-                Utilities.log("Path Exists for username: " +
-                              current_student.username +
-                              ", Repo: " + assignment.name
-                              + ", Pulling instead... ", True)
-                Utilities.flush()
+                Utilities.Debug("Path Exists for username: " +
+                                current_student.username +
+                                ", Repo: " + assignment.name
+                                + ", Pulling instead... ")
                 local_repo = Repo(path_to_clone_to)
                 local_repo.remotes.origin.pull()
-                Utilities.log(Constants.CHECK_MARK)
+                Utilities.Debug(Constants.CHECK_MARK)
             else:
-                Utilities.log("Cloning " + path_to_clone_from +
-                              " to " + path_to_clone_to + "... ", True)
-                Utilities.flush()
+                Utilities.Debug("Cloning " + path_to_clone_from +
+                                " to " + path_to_clone_to + "... ")
 
                 Repo.clone_from(path_to_clone_from, path_to_clone_to)
-                Utilities.log(Constants.CHECK_MARK)
         except GitError as e:
-            Utilities.log(Constants.CROSS_MARK)
             raise e
 
     @staticmethod

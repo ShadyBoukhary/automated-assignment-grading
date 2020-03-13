@@ -38,6 +38,9 @@ class Assignment(dict):
     def get_assignment_folder_path(self):
         return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/"
 
+    def get_clone_path(self):
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/repositories/"
+
     def get_rubric_file_path(self):
         return self.get_assignment_folder_path() + self.name + "_rubric.json"
     

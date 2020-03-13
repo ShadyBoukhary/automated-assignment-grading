@@ -7,7 +7,7 @@ import copy
 
 class IndividualAssignment(dict):
 
-    def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=None, compiled=False, ran=False):
+    def __init__(self, name, student, course_name, grade=100, wrong_lines=[], source_report=SourceReport(), compiled=False, ran=False, error='', error_details=''):
         self.name = name
         self.student = student
         self.course_name = course_name
@@ -16,6 +16,8 @@ class IndividualAssignment(dict):
         self.compiled = False
         self.ran = ran
         self.source_report = source_report
+        self.error = error
+        self.error_details = error_details
 
     @classmethod
     def from_json(cls, data):
@@ -29,10 +31,7 @@ class IndividualAssignment(dict):
     def to_dict(self):
         dic = copy.deepcopy(self.__dict__)
         dic["student"] = self.student.to_dict()
-        if self.source_report is None:
-            dic["source_report"] = {}
-        else:
-            dic["source_report"] = self.source_report.to_dict()
+        dic["source_report"] = self.source_report.to_dict()
 
         return dic
 
@@ -40,9 +39,11 @@ class IndividualAssignment(dict):
         self.source_report = None
         self.wrong_lines = []
 
+    def get_clone_path(self):
+        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/repositories/"
+
     def get_local_repo_path(self):
-        return Utilities.get_home_directory() + Constants.CLONE_DIRECTORY \
-            + "/" + Utilities.construct_repo_path(self, self.student)
+        return self.get_clone_path() + Utilities.construct_repo_path(self.student)
 
     def get_output_path(self):
         return Utilities.get_full_dir_path() + "/../../resources/" + \
@@ -60,3 +61,10 @@ class IndividualAssignment(dict):
     def get_runtime_error_output_path(self):
         return self.get_compile_output_dir() + self.name + "_" + \
             self.student.username + "_runtime" + ".txt"
+
+    def seterr(self, error, details):
+        self.error_details = details
+        self.error = error
+
+    def has_error(self):
+        return self.error != ''

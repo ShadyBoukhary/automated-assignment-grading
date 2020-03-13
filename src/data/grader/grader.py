@@ -15,6 +15,8 @@ from utils.utilities import Utilities
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from custom.runtime_exception import RuntimeException
+from tqdm import tqdm
+from colorama import Fore
 
 
 def load_students(assignment):
@@ -139,35 +141,24 @@ def run_assignment_executable(individual_assignment, assignment):
         e = IOError(err_message)
         e.strerror = err_message
         raise e
-    print(assignment.input_file)
+    #print(assignment.input_file)
     if not assignment.input_file == "":
         additional_args = additional_args + " <" + assignment.get_input_file_path()
 
     relative_output_path = individual_assignment.get_output_path()
-    shell_command = executable_path + additional_args + \
-        Constants.OUT_TO_FILE + relative_output_path
-    print("Shell command " + str(shell_command))
+    shell_command = executable_path + additional_args + Constants.OUT_TO_FILE + relative_output_path
+    Utilities.Debug("Shell command " + str(shell_command))
     Utilities.run_program(shell_command)
 
     # Check for errors
-    runtime_results = Utilities.read_file(
-        individual_assignment.get_runtime_error_output_path())
-    Utilities.delete_file(
-        individual_assignment.get_runtime_error_output_path())
+    runtime_results = Utilities.read_file(individual_assignment.get_runtime_error_output_path())
+    Utilities.delete_file(individual_assignment.get_runtime_error_output_path())
 
     if len(runtime_results) > 1 \
             and not runtime_results == "sh: pause: command not found":
         raise RuntimeException(runtime_results, runtime_results)
 
     return relative_output_path
-
-
-def print_student_header(student):
-    Utilities.log(
-        "-------------------------------------- \
-            -----------------------------------------")
-    Utilities.log("Student: " + student.name +
-                  " | Username: " + student.username)
 
 
 def grade_assignmets(students, assignment):
@@ -191,81 +182,96 @@ def grade_assignmets(students, assignment):
     assignment.individual_assignments = []
 
     # get the rubric output file contents
-
+    s_index = -1
+    s_total = len(students)
     # Loop through individual assignments
-    for current_student in students:
-
+    t = tqdm(students, bar_format="{l_bar}%s{bar}%s{r_bar}" % (Fore.GREEN, Fore.RESET), desc='')
+    for current_student in t:
+        s_index = s_index + 1
+        t.set_description(f"Grading {current_student.name}")
         # Create and add individual assignmenti to list
-        print_student_header(current_student)
-        individual_assignment = IndividualAssignment(
-            assignment.name, current_student, assignment.course_name)
+        individual_assignment = IndividualAssignment(assignment.name, current_student, assignment.course_name)
+        remaining = 7
+        step = 1
+        ind_pbar = tqdm(total=remaining)
+        with ind_pbar:
+            try:
+                # clone the current student's assignment
+                ind_pbar.set_description_str(f"{current_student.name} - Retrieving assignment")
+                DataService.clone_repo(current_student, assignment)
+                ind_pbar.update(step)
+                remaining = remaining - step
 
-        try:
-            # clone the current student's assignment
-            DataService.clone_repo(current_student, assignment)
-            # check if the source compiles at all
-            source_report = source_analyzer. \
-                analyze_source(current_student.get_assignment_path(
-                    individual_assignment), assignment, individual_assignment)
+                # check if the source compiles at all
+                ind_pbar.set_description_str(f"{current_student.name} - Compiling")
+                source_report = source_analyzer.analyze_source(current_student.get_assignment_path(individual_assignment),
+                                                               assignment, individual_assignment)
+                individual_assignment.compiled = True
+                ind_pbar.update(step)
+                remaining = remaining - step
 
-            individual_assignment.compiled = True
-            # get output file path after running the student's program
-            relative_output_path = run_assignment_executable(
-                individual_assignment, assignment)
-            individual_assignment.ran = True
-            if not assignment.executionOnly:
-                rubric_file_dicts = Utilities.json_deserialize(
-                    assignment.get_rubric_file_path())
-                # get the student output file contents
-                assignment_file_contents = Utilities.read_file(
-                    relative_output_path)
-                # grade assignment
-                individual_assignment = grade_assignment(
-                    rubric_file_dicts, assignment_file_contents,
-                    individual_assignment, assignment)
-                # copy source report to individual assignment
-                individual_assignment.source_report = source_report
-                # to avoid grades like 0.001
-                if individual_assignment.grade < 1:
-                    individual_assignment.grade = 0
-            assignment.individual_assignments.append(individual_assignment)
+                # get output file path after running the student's program
+                ind_pbar.set_description_str(f"{current_student.name} - Running")
+                relative_output_path = run_assignment_executable(individual_assignment, assignment)
+                individual_assignment.ran = True
+                ind_pbar.update(step)
+                remaining = remaining - step
 
-        except IOError as e:
-            # Keep track of skipped assignments due to errors
-            Utilities.log(e.strerror)
-            assignment.skipped_assignments.append(individual_assignment)
+                if not assignment.executionOnly:
+                    ind_pbar.set_description_str(f"{current_student.name} - Retrieving rubric")
+                    rubric_file_dicts = Utilities.json_deserialize(assignment.get_rubric_file_path())
+                    ind_pbar.update(step)
+                    remaining = remaining - step
 
-        # Handle other errors
-        except GitCommandError as e:
-            Utilities.log("Git Error - skipping student:" + e.stderr)
-            assignment.skipped_assignments.append(individual_assignment)
+                    ind_pbar.set_description_str(f"{current_student.name} - Grading")
+                    # get the student output file contents
+                    assignment_file_contents = Utilities.read_file(relative_output_path)
+                    # grade assignment
+                    individual_assignment = grade_assignment(rubric_file_dicts, assignment_file_contents,
+                                                             individual_assignment, assignment)
+                    # copy source report to individual assignment
+                    individual_assignment.source_report = source_report
+                    ind_pbar.update(step)
+                    remaining = remaining - step
+                    # to avoid grades like 0.001
+                    if individual_assignment.grade < 1:
+                        individual_assignment.grade = 0
+                    
+                ind_pbar.set_description_str(f"{Fore.GREEN}{current_student.name} - Finished grading")
+                ind_pbar.update(remaining)
+                assignment.individual_assignments.append(individual_assignment)
 
-        except CompilationException as e:
-            Utilities.log(e.message)
-            Utilities.log(e.details)
-            # TODO decide how much to deduct exactly
-            individual_assignment.grade = 0
-            assignment.individual_assignments.append(individual_assignment)
+            except IOError as e:
+                individual_assignment.seterr(e.strerror[:30], e.strerror)
+                ind_pbar.set_description_str(f"{Fore.RED}{current_student.name} - Skipped")
 
-        except RuntimeException as e:
-            Utilities.log(e.message)
-            # TODO: decide how much to deduct exactly
-            individual_assignment.grade = 0
-            assignment.individual_assignments.append(individual_assignment)
+            # Handle other errors
+            except GitCommandError as e:
+                individual_assignment.seterr("Could not pull assignment...", e.stderr)
+                ind_pbar.set_description_str(f"{Fore.RED}{current_student.name} - Skipped")
+                assignment.skipped_assignments.append(individual_assignment)
 
-        finally:
-            strr = " | Functions: " + str(len(individual_assignment
-                                              .source_report.functions)
-                                          ) if individual_assignment \
-                                               .source_report \
-                                               is not None else ""
+            except CompilationException as e:
+                individual_assignment.seterr(f"{e.details[:30]}...", e.details)
+                # TODO decide how much to deduct exactly
+                individual_assignment.grade = 0
+                individual_assignment.compiled = False
+                individual_assignment.ran = False
+                assignment.individual_assignments.append(individual_assignment)
+                ind_pbar.set_description_str(f"{Fore.RED}{current_student.name} - Compilation Error")
 
-            Utilities.log("RESULT - Wrong answers: "
-                          + str(len(individual_assignment.wrong_lines))
-                          + " | Wrong lines: " +
-                          str(individual_assignment.wrong_lines) +
-                          " | Grade: " + str(round(individual_assignment.grade))
-                          + strr)
+            except RuntimeException as e:
+                individual_assignment.seterr(f"{e.message[:30]}...", e.message)
+
+                # TODO: decide how much to deduct exactly
+                individual_assignment.grade = 0
+                individual_assignment.ran = False
+                assignment.individual_assignments.append(individual_assignment)
+                ind_pbar.set_description_str(f"{Fore.RED}{current_student.name} - Runtime Exception")
+
+            finally:
+                if s_index == s_total - 1:
+                    t.set_description_str(f"{Fore.GREEN}Grading Complete{Fore.RESET}")
 
     return assignment
 
@@ -296,88 +302,9 @@ def save_assignments(assignments):
 
     try:
         DataService.save_assignments(assignments)
-        Utilities.log("Assignment saved!")
     except Exception as e:
-        Utilities.log("ERROR: " + str(e))
+        Utilities.log("ERROR: " + e.__traceback__.__str__)
         Utilities.log("Failed to save data... Try again.")
-
-
-def enter_new_assignment():
-    """Prompts the user to enter a new assignment
-
-    Returns:
-        (Assignment): The newly created assignment
-
-    """
-    Utilities.log("--------------------------")
-    course_name = input("Course name (e.g: CMPS-3410): ")
-    name = input(
-        "The name of the assignment (should be a folder in student repositories): ")
-    # Check if course already has student list
-
-    strings_matter = input(
-        "Should string values be a part of the grading procedure (y/N): ")
-    strings_matter = True if strings_matter.upper() == "Y" else False
-    table_formatting = input(
-        "Does this assignment contain ASCII Tables? (y/N): ")
-    table_formatting = True if table_formatting.upper() == "Y" else False
-    input_file_used = input("Do you want to add an input file? (y/N): ")
-    file_path = ""
-    if input_file_used.upper() == "Y":
-        Tk().withdraw()
-        file_path = askopenfilename()
-        print(file_path)
-
-    confirm = "N"
-
-    assignment = Assignment(name, course_name, [], strings_matter=strings_matter,
-                            table_formatting=table_formatting, input_file=file_path)
-
-    # Add rubric
-    rubric_choice = input("Would you like enter to a rubric file? (y/N)")
-    if rubric_choice.upper() == "Y":
-        Tk().withdraw()
-        file_path = askopenfilename()
-        contents = Utilities.read_file(file_path)
-        Utilities.create_file_dir_if_not_exists(
-            assignment.get_rubric_file_path())
-        Utilities.write_file(assignment.get_rubric_file_path(), contents, "w+")
-    else:
-        assignment.executionOnly = True
-        Utilities.log(
-            "Assignment will be graded only by compilation and execution.")
-
-    # Add weights
-    # Tk().withdraw()
-    # file_path = askopenfilename()
-    # contents = Utilities.read_file(file_path)
-    # Utilities.create_file_dir_if_not_exists(assignment.get_weights_file_path())
-    # Utilities.write_file(assignment.get_weights_file_path(), contents, "w+")
-    while not confirm.upper() == "Y" or confirm.upper == "N":
-        confirm = input("Save assignment? (Y/n) ")
-        if confirm.upper() == "Y":
-            assignments = get_assignments(True)
-            matches = [x for x in assignments if x.course_name == course_name]
-
-            # Add students
-            if len(matches) == 0:
-                print(
-                    "This course does not have any students, please provide a file with student info in json format.\n")
-                Tk().withdraw()
-                file_path = askopenfilename()
-                contents = Utilities.read_file(file_path)
-                Utilities.create_file_dir_if_not_exists(
-                    assignment.get_students_file_path())
-                Utilities.write_file(
-                    assignment.get_students_file_path(), contents, "w+")
-            assignments.append(assignment)
-            save_assignments(assignments)
-            return assignment
-        elif confirm.upper() == "N":
-            Utilities.log("Cancelled.")
-            return None
-        else:
-            Utilities.log("Try again.")
 
 
 def get_assignment_to_grade():
@@ -412,12 +339,19 @@ def update_assignment(assignment):
     save_assignments(assignments)
 
 
-def grade(assignment):
+def grade(assignment, dry_run):
     """Grades an assignment for all students and generates a report """
 
-    # assignment = get_assignment_to_grade()
+    if dry_run:
+        print(f"{Fore.YELLOW}Dry run option is true. Will not save results or display grades.")
     students = load_students(assignment)
     assignment = grade_assignmets(students, assignment)
-    update_assignment(assignment)
+    report_generator.printSummary(assignment, dry_run)
+    if not dry_run:
+        report_generator.generate_report(assignment)
+        update_assignment(assignment)
+
+
+def summarize(assignment):
+    """Prints summary of assignment"""
     report_generator.printSummary(assignment)
-    report_generator.generate_report(assignment)
