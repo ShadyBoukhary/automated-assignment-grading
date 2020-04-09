@@ -1,5 +1,5 @@
-from utils.utilities import Utilities
-from utils.constants import Constants
+from aaa.utils.utilities import Utilities
+from aaa.utils.constants import Constants
 from core.student import Student
 from core.source_report import SourceReport
 import copy
@@ -40,18 +40,18 @@ class IndividualAssignment(dict):
         self.wrong_lines = []
 
     def get_clone_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/repositories/"
+        return Utilities.get_resources_dir() + self.course_name + "/repositories/"
 
     def get_local_repo_path(self):
         return self.get_clone_path() + Utilities.construct_repo_path(self.student)
 
     def get_output_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + \
+        return Utilities.get_resources_dir() + \
             self.course_name + "/" + self.name + "/" + self.name +  \
             "_" + self.student.username + ".txt"
 
     def get_compile_output_dir(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + \
+        return Utilities.get_resources_dir() + \
             self.course_name + "/" + self.name + "/" + "compile-temp/"
 
     def get_compile_output_path(self):

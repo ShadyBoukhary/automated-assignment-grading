@@ -1,0 +1,55 @@
+CHANGES
+=======
+
+* Updated dependencies
+* New formatting, squashed bugs
+* Converted all functionality to a CLI
+* fixed linting and pipenv
+* Added option to grade for compilation and execution only
+* Added tracking of compilation and runtime errors to be reported to the user at the end in the summary
+* Working grading with regex
+* New test data
+* Squashed a lot of bugs
+* Fixed serialization issues, now asks for rubric, weights, and student file
+* cleaning
+* cleaning
+* cleaning
+* cleaning
+* added support for interactive assignment: assignments that require user input
+* silence cmake and make builds
+* minor changes
+* deleted unnecessary files
+* updated README
+* fixed issue where sources were not being analyzed due to recent breaking change when migrating to cmake. Now all source and header files are being analyzed instead of 1 source file
+* CMAKE build working on macOS. Still needs to be tested on windows. Also deleted tests folder, no longer needed
+* added levenshtein-distance-based equality for strings when evaluating line-by-line, removed unused variables
+* changed git and assignment setup from a repo per assignment per student to a repo per student per class. Every student has 1 repo per class. Assignments are subfolders in the repo, changed repo\_name in Assignment and IndividualAssignment to name as it now simply describes the name of the assignment, which is the name of the folder in their repos
+* cleanup
+* cleaning
+* updated README
+* working on windows, system no longer runs provided executable, now it runs the compiled one during the grading process, removed log to file on for now: not working on windows due to encoding issues
+*  removed testing grades
+* added more docs
+* added docs
+* updated README
+* added spellchecking for strings\_matter options, tested previous commit... fixed bugs
+* added more accurate line-by-line evaluation by introducing tolerance, strings\_matter, and table formatting, required further testing
+* added function tracking, changed prints to logs, reordered compilation before running
+* started function detection
+* added log to a file
+* added more docs
+* added docs for grader.py
+* updated README
+* added compilation checking, created custom exception, moved all functions out of main.py except UI ones
+* cleaning
+* fixed print in wrong if statement
+* fixed serialization and deserialization, implemented working meny, handled more errors
+* added JSON serialization and deserialization of assignments, updated .gitignore, added some menu elements
+* handled errors when grading, changed directories of files generated, still have to handle errors when cloning a non-existent repo
+* added table with statistics to excel sheet
+* loop over students, more modularity, histogram generation working for grades
+* added core classes: Assignment, IndividualAssignment, Student. Increased modularity, skip assignment on file load error instead of crashing the program. Kept track of skipped assignments in an array of tuples containing the assignment and the reason for skipping
+* added grade deduction based on missing lines compared to the rubric. Added support for input weights for rubric answers per line. Improved modularity'
+* added line-by-line validation for 1 user
+* pull from github for a username, class, and repo, compare strings from files, utilities class, handle already existing repos locally, created cpp test case with CMAKE
+* Initial commit

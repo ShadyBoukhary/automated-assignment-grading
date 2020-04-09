@@ -1,13 +1,9 @@
-from core.assignment import Assignment
 from core.function import Function
-from core.individual_assignment import IndividualAssignment
 from core.source_report import SourceReport
 from custom.compilation_exception import CompilationException
 from utils.constants import Constants
 from utils.utilities import Utilities
 import glob
-from colorama import Fore
-
 
 
 def analyze_source(sources_path, assignment, individual_assignment):

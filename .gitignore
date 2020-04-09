@@ -16,4 +16,6 @@ setup.cfg
 regex_test.py
 
 tmp/
+dist/
+build/
 

@@ -1,5 +1,5 @@
-from utils.utilities import Utilities
-from core.individual_assignment import IndividualAssignment
+from aaa.utils.utilities import Utilities
+from aaa.core.individual_assignment import IndividualAssignment
 import copy
 
 
@@ -36,10 +36,10 @@ class Assignment(dict):
         return dic
 
     def get_assignment_folder_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + self.name + "/"
+        return Utilities.get_resources_dir() + self.course_name + "/" + self.name + "/"
 
     def get_clone_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/repositories/"
+        return Utilities.get_resources_dir() + self.course_name + "/repositories/"
 
     def get_rubric_file_path(self):
         return self.get_assignment_folder_path() + self.name + "_rubric.json"
@@ -51,13 +51,13 @@ class Assignment(dict):
         return self.get_assignment_folder_path() + self.name + "_interactive_input.txt"
 
     def get_reports_dir_path(self):
-        path = Utilities.get_full_dir_path() + "/../../reports/" + self.course_name + "/"
+        path = Utilities.get_shared_dir() + self.course_name + "/"
         if not Utilities.path_exists(path):
             Utilities.create_dir(path)
         return path
 
     def get_students_file_path(self):
-        return Utilities.get_full_dir_path() + "/../../resources/" + self.course_name + "/" + "students.json"
+        return Utilities.get_resources_dir() + self.course_name + "/" + "students.json"
 
     def create_student_file(self, student_file):
         contents = Utilities.read_file(student_file)

@@ -1,0 +1,7 @@
+.egg-info
+build
+dist
+.vscode
+.mypy_cache
+reports/
+tmp/

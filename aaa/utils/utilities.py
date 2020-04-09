@@ -7,6 +7,9 @@ import shutil
 
 DEBUG = os.environ['DEBUG']
 DEBUG = True if DEBUG == 'True' else False
+DEV = os.environ['DEV']
+DEV = True if DEV == 'True' else False
+SHARED = os.environ['SHARED']
 
 
 class Utilities:
@@ -54,6 +57,10 @@ class Utilities:
     @staticmethod
     def obj_dict(obj):
         return obj.__dict__
+
+    @staticmethod
+    def get_shared_dir():
+        return SHARED
 
     @staticmethod
     def json_serialize(filename, obj):
@@ -106,7 +113,7 @@ class Utilities:
     @staticmethod
     def get_full_dir_path():
         full_executable_path = os.path.realpath(__file__)
-        return os.path.dirname(full_executable_path)
+        return os.path.dirname(full_executable_path)            
 
     @staticmethod
     def create_dir(path):
@@ -118,7 +125,12 @@ class Utilities:
 
     @staticmethod
     def get_resources_dir():
-        return Utilities.get_full_dir_path() + "/../../resources/"
+        # if DEV:
+        #     return Utilities.get_full_dir_path() + "/../../shared/"
+        # else:
+        #     from os.path import expanduser
+        #     return expanduser("~") + "/resources/"
+        return Utilities.get_shared_dir()
 
     @staticmethod
     def get_log_path():

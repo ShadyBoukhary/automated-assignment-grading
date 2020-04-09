@@ -1,10 +1,9 @@
-import random
 from collections import Counter
 from statistics import median, stdev
 from utils.constants import Constants
 from utils.utilities import Utilities
 import pandas as pd
-from colorama import Fore, Back, Style
+from colorama import Fore, Back
 
 
 def printSummary(assignment, dry_run):

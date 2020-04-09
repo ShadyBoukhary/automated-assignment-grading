@@ -7,13 +7,10 @@ from autocorrect import spell
 import data.grader.source_analyzer as source_analyzer
 import data.report.report_generator as report_generator
 from custom.compilation_exception import CompilationException
-from core.assignment import Assignment
 from core.individual_assignment import IndividualAssignment
 from data.data_service.data_service import DataService
 from utils.constants import Constants
 from utils.utilities import Utilities
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
 from custom.runtime_exception import RuntimeException
 from tqdm import tqdm
 from colorama import Fore
@@ -141,7 +138,6 @@ def run_assignment_executable(individual_assignment, assignment):
         e = IOError(err_message)
         e.strerror = err_message
         raise e
-    #print(assignment.input_file)
     if not assignment.input_file == "":
         additional_args = additional_args + " <" + assignment.get_input_file_path()
 

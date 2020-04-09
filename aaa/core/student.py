@@ -1,4 +1,4 @@
-from utils.utilities import Utilities
+from aaa.utils.utilities import Utilities
 
 class Student(dict):
     def __init__(self, firstName, lastName, username, repo):
